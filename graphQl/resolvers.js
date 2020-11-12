@@ -165,7 +165,31 @@ module.exports = {
     }
 
   }, 
-  
+  updateVibe: async({ vibeInput }, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
+    if(!user) 
+      throw new Error("Invalid user");
+    const { crowdedPlace, expensivePlace, isPartner, barOrRestaurant } = vibeInput;
+    const vibe = {
+      crowdedPlace,
+      expensivePlace,
+      isPartner,
+      barOrRestaurant,
+      user
+    }
+    
+    const myVibe = new Vibe(vibe);
+    const getMyVibe = await myVibe.save();
+    return{
+      ...getMyVibe._doc,
+      _id: getMyVibe._id.toString()
+    }
+  },
   getVibe: async({}, req) =>{
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
@@ -174,7 +198,9 @@ module.exports = {
     }
 
     let vibe =  await Vibe.findOne({ user: req.userId })
-    return vibe;
+    if(vibe)
+      return vibe
+    return null;
   }
   ,
   createPost: async({postInput}, req) => {

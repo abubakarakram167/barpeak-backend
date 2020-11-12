@@ -85,6 +85,7 @@ module.exports = buildSchema(`
     updatePosts(id: ID!, postInput: postInputData!): Post!
     createBusiness(businessInput: businessInputData) : Business!
     setVibe(vibeInput: vibeInputData): Vibe!
+    updateUibe(vibeInput: vibeInputData): Vibe!
   }
 
   type PostData{
@@ -103,7 +104,7 @@ module.exports = buildSchema(`
     posts: PostData!
     singlePost(id: ID!): Post!
     allBusinesses: [Business!]!
-    getVibe: Vibe!
+    getVibe: Vibe
   }
   schema {
     query: RootQuery 

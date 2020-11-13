@@ -179,15 +179,27 @@ module.exports = {
       crowdedPlace,
       expensivePlace,
       isPartner,
-      barOrRestaurant,
-      user
+      barOrRestaurant
     }
+
+    const filter = { user: req.userId };
+    const update = 
+      { 
+        crowdedPlace,
+        expensivePlace,
+        isPartner,
+        barOrRestaurant ,
+        user
+      };
+
+    let updatedDoc = await Vibe.findOneAndUpdate(filter, update, {
+      new: true
+    });
+    console.log("the updated doc", updatedDoc);
     
-    const myVibe = new Vibe(vibe);
-    const getMyVibe = await myVibe.save();
     return{
-      ...getMyVibe._doc,
-      _id: getMyVibe._id.toString()
+      ...updatedDoc._doc,
+      _id: updatedDoc._id.toString()
     }
   },
   getVibe: async({}, req) =>{

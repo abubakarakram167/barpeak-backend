@@ -85,7 +85,7 @@ module.exports = buildSchema(`
     updatePosts(id: ID!, postInput: postInputData!): Post!
     createBusiness(businessInput: businessInputData) : Business!
     setVibe(vibeInput: vibeInputData): Vibe!
-    updateUibe(vibeInput: vibeInputData): Vibe!
+    updateVibe(vibeInput: vibeInputData): Vibe!
   }
 
   type PostData{

@@ -121,6 +121,11 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     const { placeId, category, title, crowded, expensive } = businessInput;
+    let businessData =  await Business.findOne({ placeId });
+    
+    if(businessData)
+      throw new Error("Business already added");
+
     const business = {
       placeId,
       category, 

@@ -23,7 +23,7 @@ module.exports = {
 
     const errors = [];
     if(!validator.isEmail(email)){
-      errors.push({ message: "email is correct" })
+      errors.push({ message: "email is incorrect" })
     }
     if(validator.isEmpty(password) || !validator.isLength(password, {min: 5})){
       errors.push({ message: 'Password too short' })

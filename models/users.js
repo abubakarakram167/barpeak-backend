@@ -22,6 +22,12 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
+  radius:{
+    type: String,
+    required: true,
+    default: 5000
+  }
+  ,
   dob: {
     type: String,
     required: true

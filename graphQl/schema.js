@@ -14,7 +14,8 @@ module.exports = buildSchema(`
     email: String!
     password: String
     dob: String!
-    posts: [Post!]! 
+    posts: [Post!]!
+    radius: Int! 
   }
 
   type Business{
@@ -86,6 +87,7 @@ module.exports = buildSchema(`
     createBusiness(businessInput: businessInputData) : Business!
     setVibe(vibeInput: vibeInputData): Vibe!
     updateVibe(vibeInput: vibeInputData): Vibe!
+    updateRadius(radius: Int!): User!
   }
 
   type PostData{

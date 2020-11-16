@@ -61,6 +61,91 @@ module.exports = {
     return {token, userId: result._id.toString()}
 
   },
+  updateUser: async (args, req) => {
+    const { userInput } = args;
+    const {email,firstName, lastName,dob, password, accountType, radius} = userInput
+    console.log("email", email)
+    console.log("password", password)
+
+    const errors = [];
+    if(!validator.isEmail(email)){
+      errors.push({ message: "email is incorrect" })
+    }
+    if(validator.isEmpty(password) || !validator.isLength(password, {min: 5})){
+      errors.push({ message: 'Password too short' })
+    }
+    if(errors.length){
+       const error = new Error("Invalid input");
+       error.code =422;
+       error.data = errors
+       throw error;
+    }   
+
+    const existingUser = await User.findOne({ email })
+    if(!existingUser)
+      throw new Error("User Not Found" )
+    
+    const isSamePassword = await bcrypt.compare(password, existingUser.password)
+    if(!isSamePassword){
+      password = await bcrypt.hash(password, 12);
+    }
+    else{
+      password = existingUser.password;
+    }   
+    const filter = { user: req.userId };
+    const update = 
+      { 
+        email,
+        firstName,
+        lastName,
+        dob,
+        user,
+        password,
+        accountType,
+        radius
+      };
+
+    let updatedDoc = await Vibe.findOneAndUpdate(filter, update, {
+      new: true
+    });
+    
+    // const token = jwt.sign(
+    //   { 
+    //     userId: result._id.toString(),
+    //     email: result.email
+    //   },
+    //   'secretWork',
+    //   { 'expiresIn': '1h' }
+    // );
+    return { ...updatedDoc, 
+     _id: updatedDoc._id.toString()
+    }
+
+  },
+  updateRadius: async({radius}, req)=> {
+
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
+    if(!user) 
+      throw new Error("Invalid user");
+    const filter = { _id: req.userId };
+    let updatedDoc = await User.findOneAndUpdate(filter,{ radius }, {
+      new: true
+    });
+    console.log("the user", updatedDoc)
+
+    return {
+      ...updatedDoc._doc,
+      _id: updatedDoc._id.toString()
+    }; 
+      
+  }
+  ,
   login: async({email, password})=>{
     console.log("the email", email)
     const user = await User.findOne({ email: email });

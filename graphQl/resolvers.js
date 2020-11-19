@@ -23,17 +23,17 @@ module.exports = {
 
     const errors = [];
     if(!validator.isEmail(email)){
-      errors.push({ message: "email is incorrect" })
+      throw new Error("email is incorrect" )
     }
     if(validator.isEmpty(password) || !validator.isLength(password, {min: 5})){
-      errors.push({ message: 'Password too short' })
+      throw new Error("Password is incorrect" )
     }
-    if(errors.length){
-       const error = new Error("Invalid input");
-       error.code =422;
-       error.data = errors
-       throw error;
-    }   
+    // if(errors.length){
+    //    const error = new Error("Invalid input");
+    //    error.code =422;
+    //    error.data = errors
+    //    throw error;
+    // }   
 
     const existingUser = await User.findOne({ email })
     if(existingUser)
@@ -48,8 +48,9 @@ module.exports = {
       password: hashedPassword,
       accountType 
     })
-    
     const result = await user.save()
+    console.log("the user", user)
+    const changedUser = {...result._doc, _id: result._id.toString()}
     const token = jwt.sign(
       { 
         userId: result._id.toString(),
@@ -58,7 +59,7 @@ module.exports = {
       'secretWork',
       { 'expiresIn': '1h' }
     );
-    return {token, userId: result._id.toString()}
+    return {token, user: changedUser}
 
   },
   updateUser: async (args, req) => {
@@ -150,13 +151,13 @@ module.exports = {
     console.log("the email", email)
     const user = await User.findOne({ email: email });
     if(!user){
-      const error = new Error("User not found");
+      const error = new Error("Invalid Username or Password");
       error.code = 401;
       throw error;
     }
     const isEqual = await bcrypt.compare(password, user.password)
     if(!isEqual){
-      const error = new Error('Password is incorrect');
+      const error = new Error('Invalid Username or Password');
       error.code = 401;
       throw error; 
     }
@@ -167,9 +168,25 @@ module.exports = {
       },
       'secretWork'
     );
-    return { token: token, userId: user._id.toString() }; 
+    const changedUser = {...user._doc, _id: user._id.toString()}
+
+    return { token: token, user: changedUser }; 
     
-  },
+  }, 
+  getUser: async({}, req)=>{
+    console.log("req auth", req.isAuth)
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
+    return {
+      ...user._doc,
+      _id: user._id.toString()
+    }
+  }
+  ,
   checkUserAvailable: async({email}) => {
     const existingUser = await User.findOne({ email: email });
 

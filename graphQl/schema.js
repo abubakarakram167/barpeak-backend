@@ -97,7 +97,7 @@ module.exports = buildSchema(`
 
   type AuthData{
     token: String!
-    userId: String!
+    user: User!
   }
 
   type RootQuery{
@@ -107,6 +107,7 @@ module.exports = buildSchema(`
     singlePost(id: ID!): Post!
     allBusinesses: [Business!]!
     getVibe: Vibe
+    getUser: User!
   }
   schema {
     query: RootQuery 

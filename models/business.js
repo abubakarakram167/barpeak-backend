@@ -15,6 +15,16 @@ const businessSchema = new Schema(
       type: String,
       required: true
     },
+    shortDescription: {
+      type: String,
+      required: true,
+      default: "here it is default short"
+    },
+    longDescription: {
+      type: String,
+      default: "here it is default long"
+    }
+    ,
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',

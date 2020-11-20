@@ -24,7 +24,9 @@ module.exports = buildSchema(`
     category: String!
     title: String!
     createdBy: User!
-    profile: businessProfile! 
+    profile: businessProfile!
+    shortDescription: String!
+    longDescription: String! 
   }
 
   type businessProfile {

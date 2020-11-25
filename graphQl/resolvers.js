@@ -1,6 +1,7 @@
 const User = require('../models/users');
 const Post = require('../models/posts');
 const Business = require('../models/business.js');
+const Category = require('../models/Category.js');
 const Vibe = require('../models/vibe');
 
 const mongoose = require('mongoose');
@@ -212,6 +213,22 @@ module.exports = {
     })
     return business
   },
+  getCategories: async(args, req)=>{
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    
+    const allCategory = await Category.find({})
+    const categories =  allCategory.map((category) => {
+      return {
+        ...category._doc,
+        _id: category._id.toString()
+      }
+    })
+    return categories
+  },
   createBusiness: async({ businessInput }, req) => {
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
@@ -255,12 +272,12 @@ module.exports = {
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-    const { crowdedPlace, expensivePlace, isPartner, barOrRestaurant } = vibeInput;
+    const { crowdedPlace, ageInterval, nightLife, barType } = vibeInput;
     const vibe = {
       crowdedPlace,
-      expensivePlace,
-      isPartner,
-      barOrRestaurant,
+      ageInterval,
+      nightLife,
+      barType,
       user
     }
     
@@ -281,22 +298,22 @@ module.exports = {
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-    const { crowdedPlace, expensivePlace, isPartner, barOrRestaurant } = vibeInput;
-    const vibe = {
-      crowdedPlace,
-      expensivePlace,
-      isPartner,
-      barOrRestaurant
-    }
+      const { crowdedPlace, ageInterval, nightLife, barType } = vibeInput;
+      const vibe = {
+        crowdedPlace,
+        ageInterval,
+        nightLife,
+        barType,
+        user
+      }  
 
     const filter = { user: req.userId };
     const update = 
       { 
         crowdedPlace,
-        expensivePlace,
-        isPartner,
-        barOrRestaurant ,
-        user
+        ageInterval,
+        nightLife,
+        barType
       };
 
     let updatedDoc = await Vibe.findOneAndUpdate(filter, update, {

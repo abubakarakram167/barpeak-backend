@@ -18,11 +18,11 @@ const businessSchema = new Schema(
     shortDescription: {
       type: String,
       required: true,
-      default: "here it is default short"
+      default: "The Cruise Bar For Your Entertainment"
     },
     longDescription: {
       type: String,
-      default: "here it is default long"
+      default: "Shaken, stirred or straight up, The Maholo’s bar service handles all types of events.Our bar catering is fully licensed to provide alcohol service for any occasion. Whether you need stand-alone party bartenders or full bar services, we have the perfect package for you."
     }
     ,
     createdBy: {

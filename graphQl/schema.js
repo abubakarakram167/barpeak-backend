@@ -69,17 +69,17 @@ module.exports = buildSchema(`
 
   type Vibe{
     crowdedPlace: Boolean!
-    expensivePlace: Boolean!
-    isPartner: Boolean!
-    barOrRestaurant: String!
+    ageInterval: String!
+    nightLife: Boolean!
+    barType: String
     user: User!
   }
 
   input vibeInputData{
     crowdedPlace: Boolean!
-    expensivePlace: Boolean!
-    isPartner: Boolean!
-    barOrRestaurant: String!
+    ageInterval: String!
+    nightLife: Boolean!
+    barType: String
   }
 
   type RootMutation {
@@ -90,6 +90,12 @@ module.exports = buildSchema(`
     setVibe(vibeInput: vibeInputData): Vibe!
     updateVibe(vibeInput: vibeInputData): Vibe!
     updateRadius(radius: Int!): User!
+  }
+
+  type Category{
+    title: String!
+    type: String!
+    imageUrl: String!
   }
 
   type PostData{
@@ -108,6 +114,7 @@ module.exports = buildSchema(`
     posts: PostData!
     singlePost(id: ID!): Post!
     allBusinesses: [Business!]!
+    getCategories: [Category!]!
     getVibe: Vibe
     getUser: User!
   }

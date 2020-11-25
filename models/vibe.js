@@ -7,17 +7,16 @@ const vibeSchema = new Schema(
       type: Boolean,
       required: true
     },
-    expensivePlace: {
+    nightLife:{
       type: Boolean,
       required: true
     },
-    isPartner: {
-      type: Boolean,
-      required: true
-    },
-    barOrRestaurant:{
+    ageInterval: {
       type: String,
       required: true
+    },
+    barType: {
+      type: String
     },
     user: {
       type: Schema.Types.ObjectId,

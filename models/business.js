@@ -7,10 +7,12 @@ const businessSchema = new Schema(
       type: String,
       required: true
     },
-    category: {
-      type: String,
+    category: {  
+      type: Schema.Types.ObjectId,
+      ref: 'category',
       required: true
-    },
+    }
+    ,
     title: {
       type: String,
       required: true
@@ -30,18 +32,29 @@ const businessSchema = new Schema(
       ref: 'User',
       required: true
     },
-    profile: {
-      expensive: {
-        type: Boolean,
-        default: true,
-        required: true
-      },
-      crowded: {
-        type: Boolean,
-        default: true,
-        required: true
-      }
+    ageInterval:{
+      type: String,
+      default: "young"
+    },
+    rating: {
+      fun: { type: Number },
+      crowd: { type: Number },
+      girlToGuyRatio: { type: Number },
+      difficultyGettingIn: { type: Number },
+      difficultyGettingDrink: { type: Number}
+    },
+    totalUserCountRating:{
+      type: Number,
+      default: 0
+    },
+    accumulatedRating: {
+      fun: { type: Number, default: 0 },
+      crowd: { type: Number, default: 0 },
+      girlToGuyRatio: { type: Number, default: 0 },
+      difficultyGettingIn: { type: Number, default: 0 },
+      difficultyGettingDrink: { type: Number, default: 0}
     }
+    
   },
   { timestamps: true }
 );

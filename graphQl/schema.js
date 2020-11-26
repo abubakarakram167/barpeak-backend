@@ -18,15 +18,26 @@ module.exports = buildSchema(`
     radius: Int! 
   }
 
+  type Rating{
+    fun: Float!
+    crowd: Float!
+    girlToGuyRatio: Float!
+    difficultyGettingIn: Float!
+    difficultyGettingDrink: Float!
+  }
+
   type Business{
     _id: ID!
     placeId: String!
-    category: String!
+    category: Category!
     title: String!
     createdBy: User!
     profile: businessProfile!
     shortDescription: String!
-    longDescription: String! 
+    longDescription: String!
+    rating: Rating! 
+    totalUserCountRating: Int!
+    ageInterval: String!
   }
 
   type businessProfile {
@@ -63,8 +74,18 @@ module.exports = buildSchema(`
     placeId: String!
     category: String!
     title: String!
-    crowded: Boolean!
-    expensive: Boolean!
+    longDescription: String!
+    shortDescription: String!
+    rating: ratingInput!
+    ageInterval: String!
+  }
+
+  input ratingInput{
+    fun: Float!
+    crowd: Float!
+    girlToGuyRatio: Float!
+    difficultyGettingIn: Float!
+    difficultyGettingDrink: Float!
   }
 
   type Vibe{
@@ -90,12 +111,14 @@ module.exports = buildSchema(`
     setVibe(vibeInput: vibeInputData): Vibe!
     updateVibe(vibeInput: vibeInputData): Vibe!
     updateRadius(radius: Int!): User!
+    addRating(rating: ratingInput!, businessId: String!): Rating!
   }
 
   type Category{
     title: String!
     type: String!
     imageUrl: String!
+    _id: ID!
   }
 
   type PostData{

@@ -196,19 +196,18 @@ module.exports = {
     return false;  
   },
   allBusinesses: async(args, req) => {
-    console.log("req auth", req.isAuth)
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
       error.code =401;
       throw error;
     }
-    
     const allBusiness = await Business.find({})
-    const business =  allBusiness.map((business) => {
-      console.log("the business", business)
+    const business =  allBusiness.map(async(business) => {
+    let category =  await Category.findById(mongoose.Types.ObjectId(business.category));
       return {
         ...business._doc,
-        _id: business._id.toString()
+        _id: business._id.toString(),
+        category
       }
     })
     return business
@@ -239,21 +238,24 @@ module.exports = {
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-    const { placeId, category, title, crowded, expensive } = businessInput;
+    const { placeId, category, title, rating, shortDescription, longDescription, ageInterval } = businessInput;
     let businessData =  await Business.findOne({ placeId });
     
     if(businessData)
       throw new Error("Business already added");
-
+      
+    let specificCategory =  await Category.findById(mongoose.Types.ObjectId(category));
+    console.log("the category", category)
     const business = {
       placeId,
-      category, 
+      category: specificCategory, 
       title,
-      profile: {
-        expensive,
-        crowded
-      },
-      createdBy: user
+      rating,
+      shortDescription,
+      longDescription,
+      createdBy: user,
+      totalUserCountRating: 0,
+      ageInterval
     }  
     
     const newBusiness = new Business(business);
@@ -262,6 +264,49 @@ module.exports = {
       ...getBusiness._doc,
       _id: getBusiness._id.toString()
     }
+  },
+  addRating: async({ rating , businessId}, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
+    if(!user) 
+      throw new Error("Invalid user");
+    
+    let business =  await Business.findOne({ placeId: businessId });;
+    const { fun, crowd, girlToGuyRatio, difficultyGettingIn, difficultyGettingDrink } = rating;
+    if(fun > 10 || crowd> 10 || girlToGuyRatio > 10 || difficultyGettingDrink> 10 || difficultyGettingIn > 10)
+      throw new Error("Invalid number maximum rating");
+    
+    console.log("the business", business)  
+    let { accumulatedRating, totalUserCountRating } = business;
+    totalUserCountRating = totalUserCountRating + 1;
+    accumulatedRating.fun =  (accumulatedRating.fun + fun)
+    accumulatedRating.crowd = (accumulatedRating.crowd + crowd)
+    accumulatedRating.girlToGuyRatio = (accumulatedRating.girlToGuyRatio + girlToGuyRatio)
+    accumulatedRating.difficultyGettingIn = (accumulatedRating.difficultyGettingIn + difficultyGettingIn)
+    accumulatedRating.difficultyGettingDrink = (accumulatedRating.difficultyGettingDrink + difficultyGettingDrink)
+
+    const filter = { placeId: businessId };
+    let updatedDoc = await Business.findOneAndUpdate(filter,{
+      rating:{
+      fun: (accumulatedRating.fun)/totalUserCountRating,
+      crowd: (accumulatedRating.crowd)/totalUserCountRating,
+      girlToGuyRatio: (accumulatedRating.girlToGuyRatio)/totalUserCountRating,
+      difficultyGettingIn: (accumulatedRating.difficultyGettingIn)/totalUserCountRating,
+      difficultyGettingDrink: (accumulatedRating.difficultyGettingDrink)/totalUserCountRating,
+      },
+      totalUserCountRating,
+      accumulatedRating
+     }, {
+      new: true
+    });
+    console.log("the business Rating Updated", updatedDoc)
+
+    console.log("the business", accumulatedRating)  
+    return updatedDoc.rating;  
   },
   setVibe: async({ vibeInput }, req) => {
     if(!req.isAuth){

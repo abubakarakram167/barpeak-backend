@@ -140,6 +140,7 @@ module.exports = buildSchema(`
     getCategories: [Category!]!
     getVibe: Vibe
     getUser: User!
+    getSingleBusiness(placeId: String!): Business!
   }
   schema {
     query: RootQuery 

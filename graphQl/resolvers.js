@@ -308,6 +308,16 @@ module.exports = {
     console.log("the business", accumulatedRating)  
     return updatedDoc.rating;  
   },
+  getSingleBusiness: async ({ placeId }) => {
+    console.log("place id", placeId)
+    let businessData =  await Business.findOne({ placeId });
+    console.log("business data", businessData)
+    return {
+      ...businessData._doc,
+      _id: businessData._id.toString()
+    }
+  }
+  ,
   setVibe: async({ vibeInput }, req) => {
     if(!req.isAuth){
       const error = new Error("Unauthorized User");

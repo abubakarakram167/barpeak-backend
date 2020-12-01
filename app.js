@@ -13,7 +13,6 @@ const graphqlResolver = require('./graphql/resolvers');
 var cors = require('cors');
 var auth = require('./middleware/auth');
 var events = [];
-const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -67,11 +66,12 @@ var original = `mongodb+srv://abubakar:abubakar@cluster0.egqju.mongodb.net/graph
 
 // var originalTwo = `mongodb+srv://abubakar:abubakar@cluster0.yhjwa.mongodb.net/clouding?retryWrites=true&w=majority`;
 
+// console.log("the port", port)
+var port = process.env.port || 3000;
 console.log("the port", port)
-
 mongoose.connect( connection , { useNewUrlParser: true })
         .then(()=>{  
-          app.listen(process.env.PORT || 3000, function(){
-            console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
+          app.listen(port, function(){
+            console.log("Express server listening on port %d in %s mode", app.settings.env);
           });
         }).catch(err => { console.log("the error", err) })  

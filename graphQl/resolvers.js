@@ -3,7 +3,7 @@ const Post = require('../models/posts');
 const Business = require('../models/business.js');
 const Category = require('../models/Category.js');
 const Vibe = require('../models/vibe');
-
+const axios = require('axios');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs'); 
 const validator = require('validator');
@@ -150,6 +150,7 @@ module.exports = {
   ,
   login: async({email, password})=>{
     console.log("the email", email)
+    console.log("the password", password)
     const user = await User.findOne({ email: email });
     if(!user){
       const error = new Error("Invalid Username or Password");
@@ -186,8 +187,55 @@ module.exports = {
       ...user._doc,
       _id: user._id.toString()
     }
-  }
-  ,
+  } ,
+  createCategory: async ({category, id}, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    const { title, imageUrl, type  } = category;
+    console.log("the iput", category)
+    console.log("the id", id)
+    let alreadyCategory = null;
+    if(id !== "null" )
+      alreadyCategory =  await Category.findById(mongoose.Types.ObjectId(id));    
+    if(alreadyCategory){
+      const categoryDataToChange = {
+        imageUrl,
+        title
+      }  
+      const filter = { _id: id };
+      let updatedCategory = await Category.findOneAndUpdate(filter,categoryDataToChange, {
+        new: true
+      });
+      console.log("the user", updatedCategory)
+  
+      return {
+        ...updatedCategory._doc,
+        _id: updatedCategory._id.toString()
+      }; 
+    }
+    const categoryData = {
+      imageUrl,
+      type, 
+      title
+    }  
+    const newCategory = new Category(categoryData);
+    const getCategory = await newCategory.save();
+    return {
+      ...getCategory._doc,
+      _id: getCategory._id.toString()
+    }
+
+  },
+  getCategory: async({id}) =>{
+    let category =  await Category.findById(mongoose.Types.ObjectId(id));
+    return {
+      ...category._doc,
+      _id: category._id.toString()
+    }
+  },
   checkUserAvailable: async({email}) => {
     const existingUser = await User.findOne({ email: email });
 
@@ -234,7 +282,7 @@ module.exports = {
       error.code =401;
       throw error;
     }
-
+    console.log("the business Input", businessInput);
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
@@ -263,6 +311,47 @@ module.exports = {
     return {
       ...getBusiness._doc,
       _id: getBusiness._id.toString()
+    }
+  }, 
+  updateBusiness: async( { businessInput }, req ) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
+    if(!user) 
+      throw new Error("Invalid user");
+    
+    const { placeId, category, title, rating, shortDescription, longDescription, ageInterval } = businessInput;
+    let businessData =  await Business.findOne({ placeId });
+    
+    if(!businessData)
+      throw new Error("Business Not Found");
+
+    let specificCategory =  await Category.findById(mongoose.Types.ObjectId(category));
+    
+    const filter = { placeId };
+    const update = {
+      category: specificCategory, 
+      title,
+      rating,
+      shortDescription,
+      longDescription,
+      ageInterval
+    }
+
+    console.log("the business input", businessInput);
+
+    let updatedDoc = await Business.findOneAndUpdate(filter, update, {
+      new: true
+    });
+    console.log("the updated doc", updatedDoc);
+    
+    return{
+      ...updatedDoc._doc,
+      _id: updatedDoc._id.toString(),
+      category: specificCategory
     }
   },
   addRating: async({ rating , businessId}, req) => {
@@ -311,10 +400,12 @@ module.exports = {
   getSingleBusiness: async ({ placeId }) => {
     console.log("place id", placeId)
     let businessData =  await Business.findOne({ placeId });
+    let category = await Category.findById(businessData.category)
     console.log("business data", businessData)
     return {
       ...businessData._doc,
-      _id: businessData._id.toString()
+      _id: businessData._id.toString(),
+      category
     }
   }
   ,
@@ -392,8 +483,7 @@ module.exports = {
     if(vibe)
       return vibe
     return null;
-  }
-  ,
+  },
   createPost: async({postInput}, req) => {
     // console.log("req.Auth", req.isAuth);
      console.log("the user", req.userId);

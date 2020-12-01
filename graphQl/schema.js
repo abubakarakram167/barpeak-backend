@@ -103,15 +103,23 @@ module.exports = buildSchema(`
     barType: String
   }
 
+  input categoryInputData{
+    title: String!
+    imageUrl: String!
+    type: String!
+  }
+
   type RootMutation {
     createUser(userInput: UserInputData) : AuthData!
     createPost(postInput: postInputData) : Post!
     updatePosts(id: ID!, postInput: postInputData!): Post!
     createBusiness(businessInput: businessInputData) : Business!
+    updateBusiness(businessInput: businessInputData) : Business!
     setVibe(vibeInput: vibeInputData): Vibe!
     updateVibe(vibeInput: vibeInputData): Vibe!
     updateRadius(radius: Int!): User!
     addRating(rating: ratingInput!, businessId: String!): Rating!
+    createCategory(category: categoryInputData, id: String!): Category!
   }
 
   type Category{
@@ -141,6 +149,7 @@ module.exports = buildSchema(`
     getVibe: Vibe
     getUser: User!
     getSingleBusiness(placeId: String!): Business!
+    getCategory( id: ID! ): Category!
   }
   schema {
     query: RootQuery 

@@ -5,6 +5,7 @@ const { buildSchema }  = require('graphql');
 var mongoose = require('mongoose');
 const Event = require('./models/event');
 const User = require('./models/users');
+const axios = require('axios');
 const app = express();
 const bcrypt = require('bcryptjs');
 const graphqlSchema = require('./graphql/schema');
@@ -12,10 +13,32 @@ const graphqlResolver = require('./graphql/resolvers');
 var cors = require('cors');
 var auth = require('./middleware/auth');
 var events = [];
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(auth);
+
+app.get('/getGoogleMapsResults', async function (req, res, next) {
+  const latitude = 32.7970465;
+  const longitude = -117.2545220;
+  const {business_type} = req.query;
+  console.log("int hte backend", business_type);
+  const getData = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude}, ${longitude}&radius=15000&type=${business_type}&key=AIzaSyD9CLs9poEBtI_4CHd5Y8cSHklQPoCi6NM`);
+  console.log("the resultss", getData.data.results)
+  res.send(getData.data.results);
+
+})
+
+app.get('/getSinglePlaceResult', async function (req, res, next) {
+  const { place_id } = req.query
+  console.log("the params in backend", req.query.place_id);
+  const getData = await axios.get(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${req.query.place_id}&key=AIzaSyD9CLs9poEBtI_4CHd5Y8cSHklQPoCi6NM`);
+  console.log("the resultss", getData.data.result)
+  res.send(getData.data.result);
+
+})
+
 app.use('/graphql', graphqlHTTP ({
   schema: graphqlSchema,
   rootValue: graphqlResolver,
@@ -42,7 +65,7 @@ var original = `mongodb+srv://abubakar:abubakar@cluster0.egqju.mongodb.net/graph
 
 mongoose.connect( connection , { useNewUrlParser: true })
         .then(()=>{  
-          app.listen(3000, () => {  
+          app.listen(port, () => {  
             console.log("server is up....")
           })
         }).catch(err => { console.log("the error", err) })  

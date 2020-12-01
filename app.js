@@ -8,8 +8,8 @@ const User = require('./models/users');
 const axios = require('axios');
 const app = express();
 const bcrypt = require('bcryptjs');
-const graphqlSchema = require('./graphql/schema');
-const graphqlResolver = require('./graphql/resolvers');
+const graphqlSchema = require('./graphQl/schema');
+const graphqlResolver = require('./graphQl/resolvers');
 var cors = require('cors');
 var auth = require('./middleware/auth');
 var events = [];
@@ -68,10 +68,11 @@ var original = `mongodb+srv://abubakar:abubakar@cluster0.egqju.mongodb.net/graph
 
 // console.log("the port", port)
 var port = process.env.port || 3000;
+app.listen(port, function(){
+  console.log("Express server listening on port %d in %s mode",port, app.settings.env);
+});
 console.log("the port", port)
-mongoose.connect( connection , { useNewUrlParser: true })
-        .then(()=>{  
-          app.listen(port, function(){
-            console.log("Express server listening on port %d in %s mode", app.settings.env);
-          });
-        }).catch(err => { console.log("the error", err) })  
+// mongoose.connect( connection , { useNewUrlParser: true })
+//         .then(()=>{  
+          
+//         }).catch(err => { console.log("the error", err) })  

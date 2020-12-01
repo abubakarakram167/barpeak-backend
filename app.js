@@ -19,6 +19,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(auth);
 
+app.post('/url', function(req, res) {
+  const url = req.body.url;
+  
+  res.send("askdjnaksndkajnsk");
+});
+
 app.get('/getGoogleMapsResults', async function (req, res, next) {
   const latitude = 32.7970465;
   const longitude = -117.2545220;

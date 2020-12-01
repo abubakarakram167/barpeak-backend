@@ -67,13 +67,13 @@ var original = `mongodb+srv://abubakar:abubakar@cluster0.egqju.mongodb.net/graph
 // var originalTwo = `mongodb+srv://abubakar:abubakar@cluster0.yhjwa.mongodb.net/clouding?retryWrites=true&w=majority`;
 
 // console.log("the port", port)
-var port = process.env.PORT || 3001;
-
-app.listen(port, function(){
-  console.log("Express server listening on port %d in %s mode", app.settings.env);
-});
+var port = process.env.PORT || 3000;
 console.log("the port", port)
-// mongoose.connect( connection , { useNewUrlParser: true })
-//         .then(()=>{  
-          
-//         }).catch(err => { console.log("the error", err) })  
+
+
+mongoose.connect( connection , { useNewUrlParser: true })
+        .then(()=>{  
+          app.listen(port, function(){
+            console.log("Express server listening on port %d in %s mode", app.settings.env);
+          });
+        }).catch(err => { console.log("the error", err) })  

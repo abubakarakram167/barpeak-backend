@@ -14,14 +14,16 @@ var cors = require('cors');
 var auth = require('./middleware/auth');
 var events = [];
 const port = process.env.PORT || 3000;
+var distDir = __dirname + "/dist/";
 
+app.use(express.static(distDir));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(auth);
 
-app.post('/url', function(req, res) {
+app.post('/', function(req, res) {
   const url = req.body.url;
-  res.send("askdjnaksndkajnsk");
+  res.send("askdjnaksndkajnskss");
 });
 
 app.get('/getGoogleMapsResults', async function (req, res, next) {

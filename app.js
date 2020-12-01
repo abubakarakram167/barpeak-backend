@@ -14,9 +14,7 @@ var cors = require('cors');
 var auth = require('./middleware/auth');
 var events = [];
 const port = process.env.PORT || 3000;
-var distDir = __dirname + "/dist/";
 
-app.use(express.static(distDir));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(auth);
@@ -69,6 +67,7 @@ var original = `mongodb+srv://abubakar:abubakar@cluster0.egqju.mongodb.net/graph
 
 // var originalTwo = `mongodb+srv://abubakar:abubakar@cluster0.yhjwa.mongodb.net/clouding?retryWrites=true&w=majority`;
 
+console.log("the port", port)
 
 mongoose.connect( connection , { useNewUrlParser: true })
         .then(()=>{  

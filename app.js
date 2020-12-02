@@ -24,12 +24,13 @@ app.post('/', function(req, res) {
 });
 
 app.get('/getGoogleMapsResults', async function (req, res, next) {
-  const latitude = 32.7970465;
-  const longitude = -117.2545220;
+   const latitude = req.query.lat;
+   const longitude = req.query.lon;
+   const radius = req.query.radius;
+
+  //   console.log(`the latitude ${latitude} and longitude is ${longitude}`);
   const {business_type} = req.query;
-  console.log("int hte backend", business_type);
-  const getData = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude}, ${longitude}&radius=15000&type=${business_type}&key=AIzaSyD9CLs9poEBtI_4CHd5Y8cSHklQPoCi6NM`);
-  console.log("the resultss", getData.data.results)
+  const getData = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude}, ${longitude}&radius=${radius}&type=${business_type}&key=AIzaSyD9CLs9poEBtI_4CHd5Y8cSHklQPoCi6NM`);
   res.send(getData.data.results);
 
 })

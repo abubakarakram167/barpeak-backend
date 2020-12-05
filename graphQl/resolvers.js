@@ -249,16 +249,48 @@ module.exports = {
       error.code =401;
       throw error;
     }
-    const allBusiness = await Business.find({})
-    const business =  allBusiness.map(async(business) => {
-    let category =  await Category.findById(mongoose.Types.ObjectId(business.category));
-      return {
-        ...business._doc,
-        _id: business._id.toString(),
-        category
-      }
-    })
-    return business
+    const allBusiness = await Business.find({}).populate('category')
+    // const business =  allBusiness.map(async(business) => {
+    // let category =  await Category.findById(mongoose.Types.ObjectId(business.category));
+    
+    //   return {
+    //     ...business._doc,
+    //     _id: business._id.toString(),
+    //     category
+    //   }
+    // })
+    // console.log("allBusiness", allBusiness)
+    return allBusiness
+  },
+  deleteBusiness: async({ placeId }, req)=>{
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    const getBusiness = await Business.deleteOne({ placeId })
+    if(getBusiness.deletedCount>0)
+      return true
+    return false  
+  }, 
+  deleteCategory: async({ categoryId }, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    const getCategory = await Category.deleteOne({_id: mongoose.Types.ObjectId(categoryId) })
+    console.log("getCategory", getCategory)
+    if(getCategory.deletedCount>0){
+      const getBusiness =  await Business.remove({ category: mongoose.Types.ObjectId(categoryId) })
+      console.log("getCategory", getBusiness)
+    }
+    else{
+      return false
+    }
+    if(getCategory.deletedCount > 0)
+      return true
+    return false
   },
   getCategories: async(args, req)=>{
     if(!req.isAuth){

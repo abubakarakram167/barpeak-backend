@@ -12,6 +12,7 @@ const graphqlSchema = require('./graphQl/schema');
 const graphqlResolver = require('./graphQl/resolvers');
 var cors = require('cors');
 var auth = require('./middleware/auth');
+const business = require('./models/business');
 var events = [];
 
 app.use(cors());
@@ -27,13 +28,61 @@ app.get('/getGoogleMapsResults', async function (req, res, next) {
    const latitude = req.query.lat;
    const longitude = req.query.lon;
    const radius = req.query.radius;
+   const {business_type} = req.query;
+  //  const latitude = 32.7970465;
+  //  const longitude = -117.2545220; 
+    console.log("im in backend", radius);
+    console.log(`the latitude ${latitude} the longitude: ${longitude} the radius: ${radius} and businesType: ${business_type} `)
+// console.log(`the latitude ${latitude} and longitude is ${longitude}`);
+  
+  
+  let totalResults = [];
+  let totalNames = [];
+  let noOfCalls = 3;
+  let pageToken = true;
+  let first = true;
+  while(first || (pageToken && noOfCalls !== 0)  ){
+    
+    let { data, nextPageToken } = await getAnother(latitude, longitude, radius, business_type, pageToken, first)
+    if (first)
+      first = false;
+    data.map((business) => {
+      totalResults.push(business)
+      totalNames.push(business.name)
+    })
+    await delay();
+    
+    if(!nextPageToken)
+      pageToken = null
+    else
+      pageToken = nextPageToken;  
+    if(noOfCalls === 0)
+      pageToken = false;  
+    noOfCalls = noOfCalls - 1; 
+  }
+  console.log("the total Names", totalNames); 
 
-  //   console.log(`the latitude ${latitude} and longitude is ${longitude}`);
-  const {business_type} = req.query;
-  const getData = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude}, ${longitude}&radius=${radius}&type=${business_type}&key=AIzaSyD9CLs9poEBtI_4CHd5Y8cSHklQPoCi6NM`);
-  res.send(getData.data.results);
+  res.send(totalResults);
 
 })
+
+const delay = (args) => new Promise((resolve) => {
+  setTimeout(()=>{ resolve('ok') }, 1500);
+});
+
+const getAnother = async(latitude, longitude, radius, business_type, pageToken, first) => {
+  let getBusiness  = '';
+  if(!pageToken || first )
+    getBusiness = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude}, ${longitude}&radius=${radius}&type=${business_type}&key=AIzaSyD9CLs9poEBtI_4CHd5Y8cSHklQPoCi6NM`);
+  else{
+    console.log("in comingg")
+    getBusiness = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude}, ${longitude}&radius=${radius}&type=${business_type}&key=AIzaSyD9CLs9poEBtI_4CHd5Y8cSHklQPoCi6NM&pagetoken=${pageToken}`);
+  }
+    
+  return {  data: getBusiness.data.results,
+            nextPageToken: getBusiness.data.next_page_token 
+        }
+}
 
 app.get('/getSinglePlaceResult', async function (req, res, next) {
   const { place_id } = req.query

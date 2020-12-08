@@ -23,6 +23,7 @@
     "express-graphql": "^0.11.0",
     "graphql": "^15.3.0",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
     "mongoose": "^5.10.9",
     "react-native-btr": "^1.1.5",
     "redux-devtools-extension": "^2.13.8",

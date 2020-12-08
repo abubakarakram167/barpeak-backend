@@ -7,6 +7,7 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs'); 
 const validator = require('validator');
+const moment = require('moment');
 var jwt = require('jsonwebtoken');
 
 module.exports = {
@@ -29,6 +30,10 @@ module.exports = {
     if(validator.isEmpty(password) || !validator.isLength(password, {min: 5})){
       throw new Error("Password is incorrect" )
     }
+    var years = moment().diff(dob, 'years');
+    console.log("the years", years)
+    if(years<21)
+      throw new Error("Your Age must be 21 or greater.." )
     // if(errors.length){
     //    const error = new Error("Invalid input");
     //    error.code =422;

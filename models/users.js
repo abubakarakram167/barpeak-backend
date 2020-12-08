@@ -26,11 +26,16 @@ const userSchema = new Schema({
     type: String,
     required: true,
     default: 5000
-  }
-  ,
+  },
+  profilePic: {
+    type: String,
+  },
   dob: {
     type: String,
     required: true
+  },
+  gender: {
+    type: String
   },
   posts: [
     {

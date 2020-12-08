@@ -65,7 +65,7 @@ module.exports = {
   },
   updateUser: async (args, req) => {
     const { userInput } = args;
-    const {email,firstName, lastName,dob, password, accountType, radius} = userInput
+    const {email,firstName, lastName,dob, password, accountType, radius, profilePic} = userInput
     console.log("email", email)
     console.log("password", password)
 
@@ -86,41 +86,29 @@ module.exports = {
     const existingUser = await User.findOne({ email })
     if(!existingUser)
       throw new Error("User Not Found" )
-    
-    const isSamePassword = await bcrypt.compare(password, existingUser.password)
-    if(!isSamePassword){
-      password = await bcrypt.hash(password, 12);
-    }
-    else{
-      password = existingUser.password;
-    }   
-    const filter = { user: req.userId };
     const update = 
       { 
         email,
         firstName,
         lastName,
         dob,
-        user,
-        password,
-        accountType,
-        radius
+        profilePic
       };
-
-    let updatedDoc = await Vibe.findOneAndUpdate(filter, update, {
+    const isSamePassword = await bcrypt.compare(password, existingUser.password)
+    if(!isSamePassword)
+      update.password = await bcrypt.hash(password, 12);
+   
+    const filter = { _id: req.userId };
+    console.log("usr id", req.userId)
+    let updatedDoc = await User.findOneAndUpdate(filter, update, {
       new: true
     });
     
-    // const token = jwt.sign(
-    //   { 
-    //     userId: result._id.toString(),
-    //     email: result.email
-    //   },
-    //   'secretWork',
-    //   { 'expiresIn': '1h' }
-    // );
+    console.log("the updated doc", updatedDoc);
+
     return { ...updatedDoc, 
-     _id: updatedDoc._id.toString()
+     user: updatedDoc,
+     isPasswordChange: !isSamePassword
     }
 
   },

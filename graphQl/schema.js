@@ -16,6 +16,9 @@ module.exports = buildSchema(`
     dob: String!
     posts: [Post!]!
     radius: Int! 
+    profilePic: String
+    gender: String
+    accountType: String
   }
 
   type Rating{
@@ -67,7 +70,9 @@ module.exports = buildSchema(`
     lastName: String!
     password: String!
     dob: String 
-    accountType: String!
+    accountType: String
+    profilePic: String
+    gender: String
   }
 
   input businessInputData{
@@ -109,8 +114,14 @@ module.exports = buildSchema(`
     type: String!
   }
 
+  type updateUserData{
+    user : User!
+    isPasswordChange: Boolean!
+  }
+
   type RootMutation {
     createUser(userInput: UserInputData) : AuthData!
+    updateUser(userInput: UserInputData) :updateUserData!
     createPost(postInput: postInputData) : Post!
     updatePosts(id: ID!, postInput: postInputData!): Post!
     createBusiness(businessInput: businessInputData) : Business!

@@ -24,7 +24,7 @@ module.exports = buildSchema(`
   type Rating{
     fun: Float!
     crowd: Float!
-    girlToGuyRatio: Float!
+    ratioInput: Float!
     difficultyGettingIn: Float!
     difficultyGettingDrink: Float!
   }
@@ -32,21 +32,19 @@ module.exports = buildSchema(`
   type Business{
     _id: ID!
     placeId: String!
-    category: Category!
-    title: String!
+    category: [Category]
+    name: String!
     createdBy: User!
-    profile: businessProfile!
-    shortDescription: String!
-    longDescription: String!
     rating: Rating! 
     totalUserCountRating: Int!
-    ageInterval: String!
+    ageInterval: String!,
+    photoReference: String!,
+    googleRating: Float!,
+    address: String!,
+    priceLevel: Int!
+    ratioType: String!
   }
 
-  type businessProfile {
-    expensive: Boolean
-    crowded: Boolean
-  }
 
   type Post{
     _id: ID! 
@@ -77,18 +75,21 @@ module.exports = buildSchema(`
 
   input businessInputData{
     placeId: String!
-    category: String!
-    title: String!
-    longDescription: String!
-    shortDescription: String!
+    category: String
+    name: String!
     rating: ratingInput!
     ageInterval: String!
+    photoReference: String!
+    googleRating: Float!
+    address: String!
+    priceLevel: Int!
+    ratioType: String!
   }
 
   input ratingInput{
     fun: Float!
     crowd: Float!
-    girlToGuyRatio: Float!
+    ratioInput: Float!
     difficultyGettingIn: Float!
     difficultyGettingDrink: Float!
   }

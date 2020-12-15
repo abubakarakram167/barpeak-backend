@@ -1,47 +1,53 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const photoSchema = mongoose.Schema(
+  { 
+    asset_id: String,
+    public_id: String,
+    version: Number,
+    version_id: String,
+    signature: String,
+    width: Number,
+    height: Number,
+    format: String,
+    resource_type: String,
+    created_at: String,
+    tags: [],
+    bytes: Number,
+    type: String,
+    etag: String,
+    placeholder: Boolean,
+    url: String,
+    secure_url: String,
+    original_filename: String
+  }
+
+);
+
 const businessSchema = new Schema(
   {
     placeId: {
-      type: String,
-      required: true
+      type: String
     },
-    category: {  
+    category: [{  
       type: Schema.Types.ObjectId,
-      ref: 'category',
-      required: true
-    }
+      ref: 'category'
+    }]
     ,
-    title: {
-      type: String,
-      required: true
-    },
-    shortDescription: {
-      type: String,
-      required: true,
-      default: "The Cruise Bar For Your Entertainment"
-    },
-    longDescription: {
-      type: String,
-      default: "Shaken, stirred or straight up, The Maholo’s bar service handles all types of events.Our bar catering is fully licensed to provide alcohol service for any occasion. Whether you need stand-alone party bartenders or full bar services, we have the perfect package for you."
-    }
-    ,
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+    name: {
+      type: String
     },
     ageInterval:{
       type: String,
       default: "young"
     },
     rating: {
-      fun: { type: Number },
-      crowd: { type: Number },
-      girlToGuyRatio: { type: Number },
-      difficultyGettingIn: { type: Number },
-      difficultyGettingDrink: { type: Number}
+      fun: { type: Number , default: 2},
+      crowd: { type: Number , default: 2},
+      ratioInput: { type: Number , default: 2},
+      difficultyGettingIn: { type: Number , default: 2},
+      difficultyGettingDrink: { type: Number, default: 2}
     },
     totalUserCountRating:{
       type: Number,
@@ -53,10 +59,31 @@ const businessSchema = new Schema(
       girlToGuyRatio: { type: Number, default: 0 },
       difficultyGettingIn: { type: Number, default: 0 },
       difficultyGettingDrink: { type: Number, default: 0}
-    }
-    
+    },
+    photoReference:{
+      type: String
+    },
+    ratioType: {
+      type: String,
+      default: 'boy'
+    },
+    googleBusiness: {
+      type: Schema.Types.ObjectId,
+      ref: 'GoogleBusiness'
+    },
+    addedByAdmin: {
+      type: Boolean,
+      default: false
+    },
+    location: { 
+      type: { type: String },
+      coordinates: []
+    },
+    uploadedPhotos: [photoSchema]
   },
   { timestamps: true }
 );
+
+businessSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model('Business', businessSchema);

@@ -311,31 +311,50 @@ module.exports = {
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-    const { placeId, category, title, rating, shortDescription, longDescription, ageInterval } = businessInput;
+    const { placeId, category, name, rating, ageInterval, googleRating, priceLevel, photoReference, address, ratioType } = businessInput;
     let businessData =  await Business.findOne({ placeId });
-    
+    let businessSelectedCategories = [];
+    let allCategories = category.split(',');
+
+    console.log("category", category)
+    if(category !== 'null'){ 
+      allCategories.map((id)=>{
+        businessSelectedCategories.push(mongoose.Types.ObjectId(id));
+      })
+    }
+    console.log("business selected", businessSelectedCategories)
+    let records = '';
+    if(category !== 'null')
+      records = await Category.find().where('_id').in(businessSelectedCategories).exec();
+    else
+      records = null
+     console.log("all categories", records)
+
     if(businessData)
       throw new Error("Business already added");
       
-    let specificCategory =  await Category.findById(mongoose.Types.ObjectId(category));
-    console.log("the category", category)
+    // console.log("the category", category)
     const business = {
       placeId,
-      category: specificCategory, 
-      title,
+      category: businessSelectedCategories, 
+      name,
       rating,
-      shortDescription,
-      longDescription,
+      googleRating,
+      priceLevel,
       createdBy: user,
       totalUserCountRating: 0,
-      ageInterval
+      ageInterval,
+      photoReference,
+      address,
+      ratioType
     }  
     
     const newBusiness = new Business(business);
     const getBusiness = await newBusiness.save();
     return {
       ...getBusiness._doc,
-      _id: getBusiness._id.toString()
+      _id: getBusiness._id.toString(),
+      category: records
     }
   }, 
   updateBusiness: async( { businessInput }, req ) => {
@@ -348,22 +367,25 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     
-    const { placeId, category, title, rating, shortDescription, longDescription, ageInterval } = businessInput;
+    const { placeId, category, name, rating, ageInterval, ratioType } = businessInput;
     let businessData =  await Business.findOne({ placeId });
+    let businessSelectedCategories = [];
+    let allCategories = category.split(',');
+    allCategories.map((id)=>{
+      businessSelectedCategories.push(mongoose.Types.ObjectId(id));
+    })
+    let records = await Category.find().where('_id').in(businessSelectedCategories).exec();
     
     if(!businessData)
       throw new Error("Business Not Found");
-
-    let specificCategory =  await Category.findById(mongoose.Types.ObjectId(category));
     
     const filter = { placeId };
     const update = {
-      category: specificCategory, 
-      title,
+      category: businessSelectedCategories, 
+      name,
       rating,
-      shortDescription,
-      longDescription,
-      ageInterval
+      ageInterval,
+      ratioType
     }
 
     console.log("the business input", businessInput);
@@ -376,7 +398,7 @@ module.exports = {
     return{
       ...updatedDoc._doc,
       _id: updatedDoc._id.toString(),
-      category: specificCategory
+      category: records
     }
   },
   addRating: async({ rating , businessId}, req) => {
@@ -424,13 +446,11 @@ module.exports = {
   },
   getSingleBusiness: async ({ placeId }) => {
     console.log("place id", placeId)
-    let businessData =  await Business.findOne({ placeId });
-    let category = await Category.findById(businessData.category)
+    let businessData =  await Business.findOne({ placeId }).populate('category')
     console.log("business data", businessData)
     return {
       ...businessData._doc,
-      _id: businessData._id.toString(),
-      category
+      _id: businessData._id.toString()
     }
   }
   ,

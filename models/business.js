@@ -79,6 +79,11 @@ const businessSchema = new Schema(
       type: { type: String },
       coordinates: []
     },
+    customData: {
+      address: String,
+      phoneNo: String,
+      rating: Number
+    },
     uploadedPhotos: [photoSchema]
   },
   { timestamps: true }

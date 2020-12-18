@@ -29,11 +29,11 @@ app.use('/graphql', graphqlHTTP ({
 })) 
 
 // local project #1
-//  var connection = `mongodb://abubakar:abubakar@cluster0-shard-00-00.egqju.mongodb.net:27017,cluster0-shard-00-01.egqju.mongodb.net:27017,cluster0-shard-00-02.egqju.mongodb.net:27017/graphql-practise?ssl=true&replicaSet=atlas-rgxqpa-shard-0&authSource=admin&retryWrites=true&w=majority`
+  // var connection = `mongodb://abubakar:abubakar@cluster0-shard-00-00.egqju.mongodb.net:27017,cluster0-shard-00-01.egqju.mongodb.net:27017,cluster0-shard-00-02.egqju.mongodb.net:27017/graphql-practise?ssl=true&replicaSet=atlas-rgxqpa-shard-0&authSource=admin&retryWrites=true&w=majority`
 // var original = `mongodb+srv://abubakar:abubakar@cluster0.egqju.mongodb.net/graphql-practise?retryWrites=true&w=majority`;
 
 // production
-var connection = `mongodb+srv://geoff:BarPeakthisweek1!@barpeak.i4yku.mongodb.net/BarPeak?retryWrites=true&w=majority`
+  var connection = `mongodb+srv://geoff:BarPeakthisweek1!@barpeak.i4yku.mongodb.net/ProductionBarPeak?retryWrites=true&w=majority`
 // cloud test 
 
 // var originalTwo = `mongodb+srv://abubakar:abubakar@cluster0.yhjwa.mongodb.net/clouding?retryWrites=true&w=majority`;

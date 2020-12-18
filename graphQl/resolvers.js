@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const moment = require('moment');
 var jwt = require('jsonwebtoken');
+var ObjectId = require('mongodb').ObjectID;
 
 module.exports = {
   hello(){
@@ -67,7 +68,7 @@ module.exports = {
     );
     return {token, user: changedUser}
 
-  },
+  }, 
   updateUser: async (args, req) => {
     const { userInput } = args;
     const {email,firstName, lastName,dob, password, accountType, radius, profilePic} = userInput
@@ -254,6 +255,67 @@ module.exports = {
     // })
     // console.log("allBusiness", allBusiness)
     return allBusiness
+  },
+  getAllBusiness: async({filterInput}, req)=>{
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let { pageNo, filter, added } = filterInput;
+    console.log(`the pageNo ${pageNo} and filter: ${filter} and added ${added} `)
+    pageNo = pageNo -1;
+    const resultesPerPages = 50 * pageNo;
+    console.log("the total result to skip", resultesPerPages)
+    let allBusinesses = [];
+    if(filter === 'not' && !added){
+      console.log("in if", resultesPerPages);
+      allBusinesses = await Business.find({addedByAdmin: false}).populate('googleBusiness').skip(resultesPerPages).limit(50);
+      // console.log("the allBusiness", allBusinesses)
+    }
+    else if(filter !== 'not' && added){
+      console.log("the filter", filter)
+      try{
+      allBusinesses = await Business.find({addedByAdmin: true, category: mongoose.Types.ObjectId(filter)}).populate('category googleBusiness').skip(resultesPerPages).limit(50)
+      }catch(err){
+        console.log("the error", err)
+      }
+      console.log("thee busines", allBusinesses)
+    }
+    else if(filter === 'not' && added ){
+      console.log("in the third", resultesPerPages)
+      allBusinesses = await Business.find({addedByAdmin: true, category: []}).populate('category googleBusiness').skip(resultesPerPages).limit(50)
+      console.log("the allBusinesses", allBusinesses)
+    }
+
+    return allBusinesses;
+
+  }, 
+  getSearchResults: async({ searchInput }, req) => {
+
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    const { searchValue, filter, added } = searchInput;
+    console.log(`the searchValue ${searchValue} and filter: ${filter} and added ${added} `)
+    let allBusinesses = [];
+    if(filter === 'not' && !added){
+      allBusinesses = await Business.find({addedByAdmin: false, name: { $regex: searchValue, $options: "i" }}).populate('googleBusiness category')
+    }
+    else if(filter !== 'not' && added){
+      try{
+      allBusinesses = await Business.find({addedByAdmin: true, name: { $regex: searchValue, $options: "i" } }).populate('category googleBusiness')
+      }catch(err){
+        console.log("the error", err)
+      }
+    }
+    else if(filter === 'not' && added ){
+      allBusinesses = await Business.find({addedByAdmin: true,name: { $regex: searchValue, $options: "i" } ,category: []}).populate('category googleBusiness')
+    }
+    return allBusinesses;
+  
   },
   deleteBusiness: async({ placeId }, req)=>{
     if(!req.isAuth){
@@ -569,61 +631,5 @@ module.exports = {
       creator: user
     }
     
-  },
-  posts: async(posts,req)=>{
-    if(!req.isAuth){
-      const error = new Error("Unauthorized User");
-      error.code =401;
-      throw error;
-    }
-    else{
-      console.log("inn")
-      const user =  await User.findById(mongoose.Types.ObjectId(req.userId));
-      const totalPosts =  await Post.find().countDocuments();
-      const posts = await Post.find().where('creator').in([user._id])
-        .sort({ createdAt: -1 })
-        .populate('creator')
-      return {
-        posts: posts.map((p)=>{
-          return{
-            ...p._doc,
-            _id: p._id.toString(),
-            createdAt: p.createdAt.toISOString(),
-            updatedAt: p.updatedAt.toISOString() 
-          }
-        }),
-        totalPosts: posts.length
-      }
-    }
-  },
-  singlePost: async ({ id }, req) => {
-    if(!req.isAuth){
-      const error = new Error("Unauthorized User");
-      error.code =401;
-      throw error;
-    }
-    const singlePost = await Post.findById(id);
-    console.log("the single post", singlePost)
-    return{ ...singlePost._doc,
-      _id: singlePost._id.toString(),
-      createdAt: singlePost.createdAt.toString(),
-      updatedAt: singlePost.updatedAt.toString() 
-    }
-  },
-  updatePosts: async({id, postInput}, req) => {
-    if(!req.isAuth){
-      const error = new Error("Unauthorized User");
-      error.code =401;
-      throw error;
-    }
-    console.log("postinput", postInput)
-    const updatedPost = await Post.findByIdAndUpdate(id, {  title: postInput.title, content: postInput.content, imageUrl: postInput.imageUrl })
-    console.log("the updatedPost", updatedPost);
-    return{
-      ...updatedPost._doc,
-      _id: updatedPost._id.toString(),
-      createdAt: updatedPost.createdAt.toString(),
-      updatedAt: updatedPost.updatedAt.toString()
-    }
   }
 }

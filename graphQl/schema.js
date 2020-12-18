@@ -29,6 +29,23 @@ module.exports = buildSchema(`
     difficultyGettingDrink: Float!
   }
 
+  type customBusinessData{
+    address: String
+    phoneNumber: String
+    rating: Int
+  }
+
+  type photoData{
+    asset_id: String
+    public_id: String
+    url: String,
+    secure_url: String,
+    original_filename: String
+  }
+
+  
+  
+
   type Business{
     _id: ID!
     placeId: String!
@@ -38,12 +55,58 @@ module.exports = buildSchema(`
     rating: Rating! 
     totalUserCountRating: Int!
     ageInterval: String!,
-    photoReference: String!,
-    googleRating: Float!,
-    address: String!,
-    priceLevel: Int!
     ratioType: String!
+    customData: customBusinessData
+    uploadedPhotos: [photoData]
+    googleBusiness: googleBusinessData  
   }
+
+  type closeTimeData{
+    day: String
+    time: String
+  }
+
+  type openTimeData{
+    day: String
+    time: String
+  }
+
+  type periodData{
+    close: closeTimeData
+    open: openTimeData
+  }
+
+  type openingHourData{
+    open_now: String
+    periods: [periodData]
+  }
+
+  type reviewData{
+    author_name: String,
+    author_url: String,
+    language: String,
+    profile_photo_url: String,
+    rating: Float,
+    relative_time_description: String,
+    text: String,
+    time: Int
+  }
+
+  type googleBusinessData{
+    business_status: String
+    formatted_address: String
+    formatted_phone_number: String
+    name: String
+    place_id: String
+    opening_hours: openingHourData
+    rating: Float
+    reviews: [reviewData]
+    vicinity: String,
+    user_ratings_total: Int,
+    url: String,
+    types: [String]
+  }
+  
 
 
   type Post{
@@ -153,12 +216,26 @@ module.exports = buildSchema(`
     user: User!
   }
 
+  input filterInputData{
+    pageNo: Int,
+    filter: String
+    added: Boolean
+  }
+
+  input searchInputData{
+    searchValue: String
+    filter: String
+    added: Boolean
+  }
+
   type RootQuery{
     login(email: String!, password: String!): AuthData!
     checkUserAvailable(email: String!): Boolean!
     posts: PostData!
     singlePost(id: ID!): Post!
     allBusinesses: [Business!]!
+    getAllBusiness(filterInput: filterInputData): [Business]
+    getSearchResults( searchInput: searchInputData ) : [Business]
     getCategories: [Category!]!
     getVibe: Vibe
     getUser: User!

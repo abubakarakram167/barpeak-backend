@@ -433,6 +433,7 @@ module.exports = {
     let businessData =  await Business.findOne({ placeId });
     let businessSelectedCategories = [];
     let allCategories = category.split(',');
+    console.log("all catgories", allCategories)
     allCategories.map((id)=>{
       businessSelectedCategories.push(mongoose.Types.ObjectId(id));
     })
@@ -447,10 +448,11 @@ module.exports = {
       name,
       rating,
       ageInterval,
-      ratioType
+      ratioType,
+      addedByAdmin: true
     }
 
-    console.log("the business input", businessInput);
+    
 
     let updatedDoc = await Business.findOneAndUpdate(filter, update, {
       new: true
@@ -463,6 +465,19 @@ module.exports = {
       category: records
     }
   },
+  addNotCategorizeBusiness: async({ placeId }) =>{
+    const filter = { placeId };
+    const update = {
+      addedByAdmin: true
+    }
+    let updatedDoc = await Business.findOneAndUpdate(filter, update, {
+      new: true
+    });
+    if(updatedDoc)
+      return true
+    return false;  
+  }
+  ,
   addRating: async({ rating , businessId}, req) => {
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
@@ -508,7 +523,7 @@ module.exports = {
   },
   getSingleBusiness: async ({ placeId }) => {
     console.log("place id", placeId)
-    let businessData =  await Business.findOne({ placeId }).populate('category')
+    let businessData =  await Business.findOne({ placeId }).populate('category googleBusiness')
     console.log("business data", businessData)
     return {
       ...businessData._doc,

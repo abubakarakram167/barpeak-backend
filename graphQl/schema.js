@@ -43,7 +43,13 @@ module.exports = buildSchema(`
     original_filename: String
   }
 
-  
+  input uploadedPhoto{
+    asset_id: String
+    public_id: String
+    url: String,
+    secure_url: String,
+    original_filename: String
+  }
   
 
   type Business{
@@ -142,10 +148,6 @@ module.exports = buildSchema(`
     name: String!
     rating: ratingInput!
     ageInterval: String!
-    photoReference: String!
-    googleRating: Float!
-    address: String!
-    priceLevel: Int!
     ratioType: String!
   }
 
@@ -197,6 +199,7 @@ module.exports = buildSchema(`
     createCategory(category: categoryInputData, id: String!): Category!
     deleteBusiness(placeId: String!): Boolean!
     deleteCategory(categoryId: String!): Boolean!
+    addNotCategorizeBusiness( placeId: String! ): Boolean!
   }
 
   type Category{

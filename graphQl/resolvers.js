@@ -317,14 +317,46 @@ module.exports = {
     return allBusinesses;
   
   },
-  deleteBusiness: async({ placeId }, req)=>{
+  deleteBusiness: async({ id }, req)=>{
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
       error.code =401;
       throw error;
     }
-    const getBusiness = await Business.deleteOne({ placeId })
-    if(getBusiness.deletedCount>0)
+    const filter = { _id: mongoose.Types.ObjectId(id) };
+    const update = {
+      category: [], 
+      addedByAdmin: false,
+      customData: {
+        address: null,
+        phoneNo: null,
+        rating: null,
+        latitude: null,
+        longitude: null
+      },
+      ratioType: 'boy',
+      accumulatedRating: {
+        fun: 0,
+        crowd: 0,
+        girlToGuyRatio: 0,
+        difficultyGettingIn: 0,
+        difficultyGettingDrink: 0
+      },
+      rating: {
+        fun: 2,
+        crowd: 2,
+        ratioInput: 2,
+        difficultyGettingIn: 2,
+        difficultyGettingDrink: 2
+      }
+
+    }
+
+    let updatedDoc = await Business.findOneAndUpdate(filter, update, {
+      new: true
+    });
+    console.log("the updated doc", updatedDoc);
+    if(updatedDoc)
       return true
     return false  
   }, 

@@ -187,7 +187,7 @@ module.exports = buildSchema(`
     updateRadius(radius: Int!): User!
     addRating(rating: ratingInput!, businessId: String!): Rating!
     createCategory(category: categoryInputData, id: String!): Category!
-    deleteBusiness(placeId: String!): Boolean!
+    deleteBusiness(id: String!): Boolean!
     deleteCategory(categoryId: String!): Boolean!
     addNotCategorizeBusiness( placeId: String! ): Boolean!
   }

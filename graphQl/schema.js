@@ -14,7 +14,6 @@ module.exports = buildSchema(`
     email: String!
     password: String
     dob: String!
-    posts: [Post!]!
     radius: Int! 
     profilePic: String
     gender: String
@@ -43,18 +42,17 @@ module.exports = buildSchema(`
     original_filename: String
   }
 
-  input uploadedPhoto{
-    asset_id: String
-    public_id: String
-    url: String,
-    secure_url: String,
-    original_filename: String
+  type customBusiness{
+    address: String
+    phoneNo: String
+    rating: Float
+    latitude: Float
+    longitude: Float
   }
-  
 
   type Business{
     _id: ID!
-    placeId: String!
+    placeId: String
     category: [Category]
     name: String!
     createdBy: User!
@@ -62,8 +60,9 @@ module.exports = buildSchema(`
     totalUserCountRating: Int!
     ageInterval: String!,
     ratioType: String!
-    customData: customBusinessData
+    customData: customBusiness
     uploadedPhotos: [photoData]
+    customBusiness: Boolean
     googleBusiness: googleBusinessData  
   }
 
@@ -113,24 +112,6 @@ module.exports = buildSchema(`
     types: [String]
   }
   
-
-
-  type Post{
-    _id: ID! 
-    title: String!
-    content: String!
-    imageUrl: String!
-    creator:  User!
-    createdAt: String!
-    updatedAt: String!
-  }
-
-  input postInputData{
-    title: String!
-    content: String!
-    imageUrl: String!
-  }
-
   input UserInputData {
     email: String!
     firstName: String!
@@ -143,12 +124,23 @@ module.exports = buildSchema(`
   }
 
   input businessInputData{
-    placeId: String!
+    id: String
     category: String
     name: String!
     rating: ratingInput!
     ageInterval: String!
     ratioType: String!
+    customBusiness: Boolean
+    customData: customBusinessInput
+    photos: String
+  }
+  
+  input customBusinessInput{
+    address: String
+    phoneNo: String
+    rating: Float
+    latitude: Float
+    longitude: Float
   }
 
   input ratingInput{
@@ -188,8 +180,6 @@ module.exports = buildSchema(`
   type RootMutation {
     createUser(userInput: UserInputData) : AuthData!
     updateUser(userInput: UserInputData) :updateUserData!
-    createPost(postInput: postInputData) : Post!
-    updatePosts(id: ID!, postInput: postInputData!): Post!
     createBusiness(businessInput: businessInputData) : Business!
     updateBusiness(businessInput: businessInputData) : Business!
     setVibe(vibeInput: vibeInputData): Vibe!
@@ -209,10 +199,6 @@ module.exports = buildSchema(`
     _id: ID!
   }
 
-  type PostData{
-    posts: [Post!]!
-    totalPosts: Int!
-  }
 
   type AuthData{
     token: String!
@@ -231,19 +217,24 @@ module.exports = buildSchema(`
     added: Boolean
   }
 
+  type dashboardData{
+    totalBusiness: Int
+    totalUsers: Int
+    totalCategories: Int
+  }
+
   type RootQuery{
     login(email: String!, password: String!): AuthData!
     checkUserAvailable(email: String!): Boolean!
-    posts: PostData!
-    singlePost(id: ID!): Post!
     allBusinesses: [Business!]!
     getAllBusiness(filterInput: filterInputData): [Business]
     getSearchResults( searchInput: searchInputData ) : [Business]
     getCategories: [Category!]!
     getVibe: Vibe
     getUser: User!
-    getSingleBusiness(placeId: String!): Business!
+    getSingleBusiness(id: String!): Business!
     getCategory( id: ID! ): Category!
+    getDashboardData: dashboardData!
   }
   schema {
     query: RootQuery 

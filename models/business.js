@@ -43,11 +43,11 @@ const businessSchema = new Schema(
       default: "young"
     },
     rating: {
-      fun: { type: Number , default: 2},
-      crowd: { type: Number , default: 2},
-      ratioInput: { type: Number , default: 2},
-      difficultyGettingIn: { type: Number , default: 2},
-      difficultyGettingDrink: { type: Number, default: 2}
+      fun: { type: Number },
+      crowd: { type: Number },
+      ratioInput: { type: Number },
+      difficultyGettingIn: { type: Number},
+      difficultyGettingDrink: { type: Number}
     },
     totalUserCountRating:{
       type: Number,
@@ -79,10 +79,16 @@ const businessSchema = new Schema(
       type: { type: String },
       coordinates: []
     },
+    customBusiness: {
+      type: Boolean,
+      default: false
+    },
     customData: {
       address: String,
       phoneNo: String,
-      rating: Number
+      rating: Number,
+      latitude: Number,
+      longitude: Number
     },
     uploadedPhotos: [photoSchema]
   },

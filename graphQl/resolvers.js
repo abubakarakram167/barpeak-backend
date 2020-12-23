@@ -369,54 +369,60 @@ module.exports = {
       error.code =401;
       throw error;
     }
-    console.log("the business Input", businessInput);
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-    const { placeId, category, name, rating, ageInterval, googleRating, priceLevel, photoReference, address, ratioType } = businessInput;
-    let businessData =  await Business.findOne({ placeId });
+    
+    const { category, name, rating, ageInterval, ratioType, customData, customBusiness, photos } = businessInput;
+    console.log("the business input ", businessInput)
+
     let businessSelectedCategories = [];
     let allCategories = category.split(',');
-
-    console.log("category", category)
-    if(category !== 'null'){ 
-      allCategories.map((id)=>{
-        businessSelectedCategories.push(mongoose.Types.ObjectId(id));
-      })
-    }
-    console.log("business selected", businessSelectedCategories)
-    let records = '';
-    if(category !== 'null')
-      records = await Category.find().where('_id').in(businessSelectedCategories).exec();
-    else
-      records = null
-     console.log("all categories", records)
-
-    if(businessData)
-      throw new Error("Business already added");
-      
-    // console.log("the category", category)
-    const business = {
-      placeId,
+    allCategories.map((id)=>{
+      businessSelectedCategories.push(mongoose.Types.ObjectId(id));
+    })
+    let records = await Category.find().where('_id').in(businessSelectedCategories).exec();
+    
+    console.log("the all photoss", photos.split(',') )
+    
+    const totalPhotos = photos.split(',').map((url)=>{
+      return {
+        secure_url: url
+      }
+    }) 
+    console.log("the total photos", totalPhotos)
+    const { latitude, longitude , address, phoneNo} = customData;
+    const business = new Business({
       category: businessSelectedCategories, 
       name,
       rating,
-      googleRating,
-      priceLevel,
-      createdBy: user,
-      totalUserCountRating: 0,
       ageInterval,
-      photoReference,
-      address,
-      ratioType
-    }  
-    
-    const newBusiness = new Business(business);
-    const getBusiness = await newBusiness.save();
-    return {
-      ...getBusiness._doc,
-      _id: getBusiness._id.toString(),
+      ratioType,
+      addedByAdmin: true,
+      customBusiness: true,
+      uploadedPhotos: totalPhotos,
+      location: {
+        type: "Point",
+        coordinates: [longitude, latitude ]
+      },
+      customData: {
+        address,
+        phoneNo,
+        rating: customData.rating,
+        latitude,
+        longitude
+      }
+    })
+    try{
+    let updatedDoc = await business.save();
+    console.log("the updated doc", updatedDoc)
+    return{
+      ...updatedDoc._doc,
+      _id: updatedDoc._id.toString(),
       category: records
+    }
+    }catch(err){
+      console.log("the error", err)
     }
   }, 
   updateBusiness: async( { businessInput }, req ) => {
@@ -429,8 +435,7 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     
-    const { placeId, category, name, rating, ageInterval, ratioType } = businessInput;
-    let businessData =  await Business.findOne({ placeId });
+    const { id, category, name, rating, ageInterval, ratioType, photos, customData } = businessInput;
     let businessSelectedCategories = [];
     let allCategories = category.split(',');
     console.log("all catgories", allCategories)
@@ -438,18 +443,29 @@ module.exports = {
       businessSelectedCategories.push(mongoose.Types.ObjectId(id));
     })
     let records = await Category.find().where('_id').in(businessSelectedCategories).exec();
+    const totalPhotos = photos.split(',').map((url)=>{
+      return {
+        secure_url: url
+      }
+    }) 
     
-    if(!businessData)
-      throw new Error("Business Not Found");
-    
-    const filter = { placeId };
+    const filter = { _id: mongoose.Types.ObjectId(id) };
+    const { latitude, longitude , address, phoneNo} = customData;
     const update = {
       category: businessSelectedCategories, 
       name,
       rating,
       ageInterval,
       ratioType,
-      addedByAdmin: true
+      addedByAdmin: true,
+      uploadedPhotos: totalPhotos,
+      customData: {
+        address,
+        phoneNo,
+        rating: customData.rating,
+        latitude,
+        longitude
+      }
     }
 
     
@@ -464,7 +480,28 @@ module.exports = {
       _id: updatedDoc._id.toString(),
       category: records
     }
-  },
+  }, 
+  getDashboardData: async({}, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let allRequests = [];
+    allRequests.push(Business.find({}).count())
+    allRequests.push(User.find({}).count())
+    allRequests.push(Category.find({}).count())
+   
+    const [totalBusiness, totalUsers, totalCategories ] = await Promise.all(allRequests)
+    
+    return {
+      totalBusiness,
+      totalUsers,
+      totalCategories
+    }
+
+  }
+  ,
   addNotCategorizeBusiness: async({ placeId }) =>{
     const filter = { placeId };
     const update = {
@@ -521,9 +558,9 @@ module.exports = {
     console.log("the business", accumulatedRating)  
     return updatedDoc.rating;  
   },
-  getSingleBusiness: async ({ placeId }) => {
-    console.log("place id", placeId)
-    let businessData =  await Business.findOne({ placeId }).populate('category googleBusiness')
+  getSingleBusiness: async ({ id }) => {
+    console.log("id business is", id)
+    let businessData =  await Business.findById(mongoose.Types.ObjectId(id)).populate('category googleBusiness')
     console.log("business data", businessData)
     return {
       ...businessData._doc,

@@ -291,6 +291,27 @@ module.exports = {
     return allBusinesses;
 
   }, 
+  getNearByLocationBusiness: async ({locationInput}, req) => {
+    const { latitude, longitude, radius } = locationInput;
+    console.log("the nearby input", locationInput)
+
+    const getData = await Business.find({
+      location: {
+       $near: {
+        $maxDistance: radius,
+        $geometry: {
+         type: "Point",
+         coordinates: [longitude, latitude ]
+        }
+       }
+      },
+      addedByAdmin: true
+     })
+    .populate('googleBusiness category');
+    // console.log("the getdata", getData);
+     
+    return getData;   
+  },
   getSearchResults: async({ searchInput }, req) => {
 
     if(!req.isAuth){

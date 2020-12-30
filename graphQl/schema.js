@@ -50,6 +50,11 @@ module.exports = buildSchema(`
     longitude: Float
   }
 
+  type location{
+    type: String
+    coordinates:[Float]
+  }
+
   type Business{
     _id: ID!
     placeId: String
@@ -63,7 +68,9 @@ module.exports = buildSchema(`
     customData: customBusiness
     uploadedPhotos: [photoData]
     customBusiness: Boolean
-    googleBusiness: googleBusinessData  
+    googleBusiness: googleBusinessData
+    addedByAdmin: Boolean
+    location: location  
   }
 
   type closeTimeData{
@@ -223,10 +230,17 @@ module.exports = buildSchema(`
     totalCategories: Int
   }
 
+  input locationInputData{
+    latitude: Float
+    longitude: Float
+    radius: Int
+  }
+
   type RootQuery{
     login(email: String!, password: String!): AuthData!
     checkUserAvailable(email: String!): Boolean!
     allBusinesses: [Business!]!
+    getNearByLocationBusiness(locationInput: locationInputData): [ Business]
     getAllBusiness(filterInput: filterInputData): [Business]
     getSearchResults( searchInput: searchInputData ) : [Business]
     getCategories: [Category!]!

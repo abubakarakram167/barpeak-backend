@@ -223,6 +223,9 @@ module.exports = {
     }
 
   },
+  addToFavourites: async({id}) => {
+    
+  },
   getCategory: async({id}) =>{
     let category =  await Category.findById(mongoose.Types.ObjectId(id));
     return {
@@ -337,6 +340,10 @@ module.exports = {
     }
     return allBusinesses;
   
+  },
+  searchByUser: async ({ searchValue }, req) => {
+    const searchBusinesses = Business.find({addedByAdmin: true, name: { $regex: searchValue, $options: "i" }}).populate('googleBusiness category')
+    return searchBusinesses;
   },
   deleteBusiness: async({ id }, req)=>{
     if(!req.isAuth){
@@ -619,8 +626,23 @@ module.exports = {
       ...businessData._doc,
       _id: businessData._id.toString()
     }
-  }
-  ,
+  },
+  getFavouriteEstablishments: async ({}, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId)).populate('favoritesEstablishments');
+    if(!user) 
+      throw new Error("Invalid user");
+      let userTotalEstablishments = [];
+    user.favoritesEstablishments.map((business) => {
+      userTotalEstablishments.push(Business.findById(mongoose.Types.ObjectId(business._id)).populate('category googleBusiness'))
+    })
+    
+    return await Promise.all(userTotalEstablishments);
+  },
   setVibe: async({ vibeInput }, req) => {
     if(!req.isAuth){
       const error = new Error("Unauthorized User");

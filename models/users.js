@@ -37,10 +37,11 @@ const userSchema = new Schema({
   gender: {
     type: String
   },
-  posts: [
+  favoritesEstablishments: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Post'
+      ref: 'Business',
+      default: null
     }
   ]
 });

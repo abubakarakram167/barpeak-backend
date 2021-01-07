@@ -45,7 +45,7 @@ const businessSchema = new Schema(
     rating: {
       fun: { type: Number },
       crowd: { type: Number },
-      ratioInput: { type: Number },
+      ratioInput: { type: Number , max: 3},
       difficultyGettingIn: { type: Number},
       difficultyGettingDrink: { type: Number}
     },

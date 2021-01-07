@@ -197,6 +197,8 @@ module.exports = buildSchema(`
     deleteBusiness(id: String!): Boolean!
     deleteCategory(categoryId: String!): Boolean!
     addNotCategorizeBusiness( placeId: String! ): Boolean!
+    addToFavourites(id: String): Business
+    removeToFavourites(id: String): Business
   }
 
   type Category{
@@ -249,6 +251,8 @@ module.exports = buildSchema(`
     getSingleBusiness(id: String!): Business!
     getCategory( id: ID! ): Category!
     getDashboardData: dashboardData!
+    searchByUser(searchValue: String): [Business]
+    getFavouriteEstablishments: [Business]
   }
   schema {
     query: RootQuery 

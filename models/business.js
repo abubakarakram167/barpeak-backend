@@ -56,7 +56,7 @@ const businessSchema = new Schema(
     accumulatedRating: {
       fun: { type: Number, default: 0 },
       crowd: { type: Number, default: 0 },
-      girlToGuyRatio: { type: Number, default: 0 },
+      ratioInput: { type: Number, default: 0 },
       difficultyGettingIn: { type: Number, default: 0 },
       difficultyGettingDrink: { type: Number, default: 0}
     },

@@ -197,8 +197,7 @@ module.exports = buildSchema(`
     deleteBusiness(id: String!): Boolean!
     deleteCategory(categoryId: String!): Boolean!
     addNotCategorizeBusiness( placeId: String! ): Boolean!
-    addToFavourites(id: String): Business
-    removeToFavourites(id: String): Business
+    addToFavourites(id: String, addOrRemove: String): [Business]
   }
 
   type Category{

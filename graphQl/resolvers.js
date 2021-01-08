@@ -189,8 +189,6 @@ module.exports = {
       throw error;
     }
     const { title, imageUrl, type  } = category;
-    console.log("the iput", category)
-    console.log("the id", id)
     let alreadyCategory = null;
     if(id !== "null" )
       alreadyCategory =  await Category.findById(mongoose.Types.ObjectId(id));    
@@ -223,8 +221,36 @@ module.exports = {
     }
 
   },
-  addToFavourites: async({id}) => {
-    
+  addToFavourites: async({id, addOrRemove}, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));  
+    let UserFavouritesEstablishments  =  await user.favoritesEstablishments;
+    if(addOrRemove === "add"){
+      UserFavouritesEstablishments.push(mongoose.Types.ObjectId(id))
+    }
+    else if(addOrRemove === "remove"){
+      UserFavouritesEstablishments = UserFavouritesEstablishments.filter(business=> {
+        return mongoose.Types.ObjectId(business).toString() !== mongoose.Types.ObjectId(id).toString()
+      })
+    }
+   
+
+    let updatedDoc = await User.findOneAndUpdate({ _id: mongoose.Types.ObjectId(req.userId) }, 
+    {
+      favoritesEstablishments: UserFavouritesEstablishments
+    }, 
+    {
+      new: true
+    }).populate('favoritesEstablishments');
+    const allFavourite = updatedDoc.favoritesEstablishments.map(business => business._id)
+    console.log("thedocuments idss", allFavourite)
+    let updatedFavourites = await Business.find({_id: allFavourite}).populate('category googleBusiness');
+
+    return updatedFavourites
   },
   getCategory: async({id}) =>{
     let category =  await Category.findById(mongoose.Types.ObjectId(id));
@@ -247,16 +273,6 @@ module.exports = {
       throw error;
     }
     const allBusiness = await Business.find({}).populate('category')
-    // const business =  allBusiness.map(async(business) => {
-    // let category =  await Category.findById(mongoose.Types.ObjectId(business.category));
-    
-    //   return {
-    //     ...business._doc,
-    //     _id: business._id.toString(),
-    //     category
-    //   }
-    // })
-    // console.log("allBusiness", allBusiness)
     return allBusiness
   },
   getAllBusiness: async({filterInput}, req)=>{
@@ -585,9 +601,9 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     
-    let business =  await Business.findOne({ placeId: businessId });;
-    const { fun, crowd, girlToGuyRatio, difficultyGettingIn, difficultyGettingDrink } = rating;
-    if(fun > 10 || crowd> 10 || girlToGuyRatio > 10 || difficultyGettingDrink> 10 || difficultyGettingIn > 10)
+    let business =  await Business.findById(businessId);;
+    const { fun, crowd, ratioInput, difficultyGettingIn, difficultyGettingDrink } = rating;
+    if(fun > 5.1 || crowd> 5.1 || ratioInput > 3.1 || difficultyGettingDrink> 4.1 || difficultyGettingIn > 5.1)
       throw new Error("Invalid number maximum rating");
     
     console.log("the business", business)  
@@ -595,16 +611,16 @@ module.exports = {
     totalUserCountRating = totalUserCountRating + 1;
     accumulatedRating.fun =  (accumulatedRating.fun + fun)
     accumulatedRating.crowd = (accumulatedRating.crowd + crowd)
-    accumulatedRating.girlToGuyRatio = (accumulatedRating.girlToGuyRatio + girlToGuyRatio)
+    accumulatedRating.ratioInput = (accumulatedRating.ratioInput + ratioInput)
     accumulatedRating.difficultyGettingIn = (accumulatedRating.difficultyGettingIn + difficultyGettingIn)
     accumulatedRating.difficultyGettingDrink = (accumulatedRating.difficultyGettingDrink + difficultyGettingDrink)
 
-    const filter = { placeId: businessId };
+    const filter = { _id: mongoose.Types.ObjectId(businessId) };
     let updatedDoc = await Business.findOneAndUpdate(filter,{
       rating:{
       fun: (accumulatedRating.fun)/totalUserCountRating,
       crowd: (accumulatedRating.crowd)/totalUserCountRating,
-      girlToGuyRatio: (accumulatedRating.girlToGuyRatio)/totalUserCountRating,
+      ratioInput: (accumulatedRating.ratioInput)/totalUserCountRating,
       difficultyGettingIn: (accumulatedRating.difficultyGettingIn)/totalUserCountRating,
       difficultyGettingDrink: (accumulatedRating.difficultyGettingDrink)/totalUserCountRating,
       },
@@ -613,7 +629,6 @@ module.exports = {
      }, {
       new: true
     });
-    console.log("the business Rating Updated", updatedDoc)
 
     console.log("the business", accumulatedRating)  
     return updatedDoc.rating;  

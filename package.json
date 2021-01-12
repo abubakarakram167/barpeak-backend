@@ -26,9 +26,13 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
     "mongoose": "^5.10.9",
+    "nexmo": "^2.9.1",
+    "otp-generator": "^2.0.0",
     "react-native-btr": "^1.1.5",
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
+    "sendotp": "^1.2.9",
+    "twilio": "^3.54.2",
     "validator": "^13.1.17"
   },
   "devDependencies": {

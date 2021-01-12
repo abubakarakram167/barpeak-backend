@@ -10,12 +10,50 @@ const data = require('./jsonData/nightClubs');
 const barData = require('./jsonData/bar');
 const restaurantData = require('./jsonData/restaurant');
 const mixedData = require('./jsonData/mixedThree');
+var otpGenerator = require('otp-generator')
 
 cloudinary.config({ 
   cloud_name: 'developer-inn', 
   api_key: '141611599995991', 
   api_secret: '-FP9u7Z7cyB3TVM7x5dGpXcfDco' 
 });
+
+const accountSid = "ACaf7f7f1c64212e0e1ff0fba4fea6ccb0";
+const authToken = "a0df3ee8905812b20f81e1efa2e549ff";
+const client = require('twilio')(accountSid, authToken);
+
+router.post('/sendVerificationCode', async function (req, res){
+  const { phoneNo } = req.body;
+  console.log("the phone No", phoneNo)
+  try{
+    const data = await client.verify.services('VAcc8f62c04b1f41a282bd3f490fb693ed')
+                            .verifications
+                            .create({to: phoneNo, channel: 'sms'})  
+    res.send({ data: data })          
+    console.log("the data", data)       
+  }catch(err){
+    console.log("the error", err)
+    if(err.code === 60200){
+    res.status(500).send({ error: 'Your Number is not Correct' })
+    }
+  }          
+            
+})
+router.get("/otpGenerator", async function (req, res){
+  sendOtp.send("+923244974671", "BarPeak", function (error, data) {
+    console.log(data);
+  });
+})
+
+router.post('/checkVerify', function(req, res){
+  const {phoneNo, code} = req.body;
+  client.verify.services('VAcc8f62c04b1f41a282bd3f490fb693ed')
+      .verificationChecks
+      .create({to: phoneNo, code})
+      .then(verification_check => {
+        res.send({ verification_check })
+      });
+})
 
 router.post('/uploadAllBusinessPhotos', async function(req, res) {
   const getAllBusinesses = await Business.find({}).populate('googleBusiness').skip(2000).limit(479)

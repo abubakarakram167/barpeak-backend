@@ -11,6 +11,8 @@ var mainRoutes = require('./routes.js')
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(auth);
 app.use(mainRoutes)
 

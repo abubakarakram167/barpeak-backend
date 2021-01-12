@@ -20,43 +20,32 @@ module.exports = {
   },
   createUser: async (args, req) => {
     const { userInput } = args;
-    const {email,firstName, lastName,dob, password, accountType} = userInput
-    console.log("email", email)
-    console.log("password", password)
-
+    const {email, firstName, lastName, dob, accountType, phoneNumber} = userInput
+  
     const errors = [];
     if(!validator.isEmail(email)){
       throw new Error("email is incorrect" )
     }
-    if(validator.isEmpty(password) || !validator.isLength(password, {min: 5})){
-      throw new Error("Password is incorrect" )
-    }
+  
     var years = moment().diff(dob, 'years');
-    console.log("the years", years)
+
     if(years<21)
       throw new Error("Your Age must be 21 or greater.." )
-    // if(errors.length){
-    //    const error = new Error("Invalid input");
-    //    error.code =422;
-    //    error.data = errors
-    //    throw error;
-    // }   
-
+    
     const existingUser = await User.findOne({ email })
     if(existingUser)
       throw new Error("User already exists" )
     
-    const hashedPassword = await bcrypt.hash(userInput.password, 12);
     let user = new User( {
       firstName,
       lastName,
       email,
       dob,
-      password: hashedPassword,
-      accountType 
+      accountType,
+      phoneNumber 
     })
     const result = await user.save()
-    console.log("the user", user)
+  
     const changedUser = {...result._doc, _id: result._id.toString()}
     const token = jwt.sign(
       { 
@@ -64,7 +53,7 @@ module.exports = {
         email: result.email
       },
       'secretWork',
-      { 'expiresIn': '1h' }
+      { 'expiresIn': '18h' }
     );
     return {token, user: changedUser}
 
@@ -142,21 +131,14 @@ module.exports = {
       
   }
   ,
-  login: async({email, password})=>{
-    console.log("the email", email)
-    console.log("the password", password)
+  login: async({email})=>{
     const user = await User.findOne({ email: email });
     if(!user){
       const error = new Error("Invalid Username or Password");
       error.code = 401;
       throw error;
     }
-    const isEqual = await bcrypt.compare(password, user.password)
-    if(!isEqual){
-      const error = new Error('Invalid Username or Password');
-      error.code = 401;
-      throw error; 
-    }
+
     const token = jwt.sign(
       { 
         userId: user._id.toString(),
@@ -181,7 +163,24 @@ module.exports = {
       ...user._doc,
       _id: user._id.toString()
     }
-  } ,
+  }, 
+  getUserByAppleIdAndUpdateEmail: async({email, appleId})=> {
+    let user = await User.findOne({ appleId });
+    if(! user)
+      return null
+
+    let updatedUser ;  
+    if(user.email !== email){
+      updatedUser = await User.findOneAndUpdate({ appleId }, {email}, {
+        new: true
+      });
+      console.log("the updated doc", updatedUser);
+    }
+    else
+      updatedUser = user;
+    
+     return updatedUser; 
+  },
   createCategory: async ({category, id}, req) => {
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
@@ -632,6 +631,10 @@ module.exports = {
 
     console.log("the business", accumulatedRating)  
     return updatedDoc.rating;  
+  },
+  getUserByPhoneNumber: async({ phoneNumber }) => {
+    let user = await User.findOne({ phoneNumber });
+    return user;
   },
   getSingleBusiness: async ({ id }) => {
     console.log("id business is", id)

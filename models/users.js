@@ -7,8 +7,7 @@ const userSchema = new Schema({
     required: true
   },
   password: {
-    type: String,
-    required: true
+    type: String
   },
   firstName: {
     type: String,
@@ -43,7 +42,18 @@ const userSchema = new Schema({
       ref: 'Business',
       default: null
     }
-  ]
+  ],
+  phoneNumber: {
+    type: String,
+    required: true
+  },
+  admin: {
+    type: Boolean,
+    default: false
+  },
+  appleId: {
+    type: String
+  }
 });
 
 module.exports = mongoose.model('User', userSchema);

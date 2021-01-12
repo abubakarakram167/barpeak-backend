@@ -18,6 +18,7 @@ module.exports = buildSchema(`
     profilePic: String
     gender: String
     accountType: String
+    phoneNumber: String
   }
 
   type Rating{
@@ -123,11 +124,11 @@ module.exports = buildSchema(`
     email: String!
     firstName: String!
     lastName: String!
-    password: String!
     dob: String 
     accountType: String
     profilePic: String
-    gender: String
+    gender: String,
+    phoneNumber: String!
   }
 
   input businessInputData{
@@ -198,6 +199,7 @@ module.exports = buildSchema(`
     deleteCategory(categoryId: String!): Boolean!
     addNotCategorizeBusiness( placeId: String! ): Boolean!
     addToFavourites(id: String, addOrRemove: String): [Business]
+    getUserByAppleIdAndUpdateEmail(email: String, appleId: String): User
   }
 
   type Category{
@@ -238,7 +240,7 @@ module.exports = buildSchema(`
   }
 
   type RootQuery{
-    login(email: String!, password: String!): AuthData!
+    login(email: String!): AuthData!
     checkUserAvailable(email: String!): Boolean!
     allBusinesses: [Business!]!
     getNearByLocationBusiness(locationInput: locationInputData): [ Business]
@@ -252,6 +254,7 @@ module.exports = buildSchema(`
     getDashboardData: dashboardData!
     searchByUser(searchValue: String): [Business]
     getFavouriteEstablishments: [Business]
+    getUserByPhoneNumber(phoneNumber: String!): User
   }
   schema {
     query: RootQuery 

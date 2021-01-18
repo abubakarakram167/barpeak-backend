@@ -20,13 +20,15 @@ module.exports = {
   },
   createUser: async (args, req) => {
     const { userInput } = args;
-    const {email, firstName, lastName, dob, accountType, phoneNumber} = userInput
+    const {email, firstName, lastName, dob, accountType, phoneNumber, password} = userInput
   
     const errors = [];
     if(!validator.isEmail(email)){
       throw new Error("email is incorrect" )
     }
-  
+    let hashedPassword = null;
+    if (password)
+      hashedPassword = await bcrypt.hash(userInput.password, 12);
     var years = moment().diff(dob, 'years');
 
     if(years<21)
@@ -42,7 +44,8 @@ module.exports = {
       email,
       dob,
       accountType,
-      phoneNumber 
+      phoneNumber,
+      password : hashedPassword
     })
     const result = await user.save()
   
@@ -52,49 +55,50 @@ module.exports = {
         userId: result._id.toString(),
         email: result.email
       },
-      'secretWork',
-      { 'expiresIn': '18h' }
+      'secretWork'
     );
     return {token, user: changedUser}
 
   }, 
   updateUser: async (args, req) => {
     const { userInput } = args;
-    const {email,firstName, lastName,dob, password, accountType, radius, profilePic} = userInput
-    console.log("email", email)
-    console.log("password", password)
+    const {existingEmail,newEmail,firstName, lastName,dob, profilePic } = userInput
+    console.log("new email", newEmail)
+    console.log("the existing email", existingEmail);
+    let newEmailFieldinsert = newEmail === "notApply" ? "notApply" : newEmail ;
+   
 
-    const errors = [];
-    if(!validator.isEmail(email)){
-      errors.push({ message: "email is incorrect" })
+    if(!validator.isEmail(existingEmail)){
+      throw new Error( "Existing email is incorrect")
     }
-    if(validator.isEmpty(password) || !validator.isLength(password, {min: 5})){
-      errors.push({ message: 'Password too short' })
+    console.log("new", newEmailFieldinsert)
+    if(newEmailFieldinsert!== "notApply") {
+      if (!validator.isEmail(newEmail))
+         throw new Error( "new email is incorrect")
     }
-    if(errors.length){
-       const error = new Error("Invalid input");
-       error.code =422;
-       error.data = errors
-       throw error;
-    }   
 
-    const existingUser = await User.findOne({ email })
+    
+    let updatedEmail = existingEmail;
+    const existingUser = await User.findOne({ email: existingEmail })
     if(!existingUser)
       throw new Error("User Not Found" )
+    if(newEmail !== "notApply")
+      updatedEmail = newEmail;
+
     const update = 
       { 
-        email,
+        email: updatedEmail,
         firstName,
         lastName,
         dob,
         profilePic
       };
-    const isSamePassword = await bcrypt.compare(password, existingUser.password)
-    if(!isSamePassword)
-      update.password = await bcrypt.hash(password, 12);
-   
+      
+    let isSameEmail = true;
+    if(newEmail !== "notApply")
+      isSameEmail =  existingUser.email === newEmail ? true : false
+
     const filter = { _id: req.userId };
-    console.log("usr id", req.userId)
     let updatedDoc = await User.findOneAndUpdate(filter, update, {
       new: true
     });
@@ -103,7 +107,7 @@ module.exports = {
 
     return { ...updatedDoc, 
      user: updatedDoc,
-     isPasswordChange: !isSamePassword
+     isSameEmail: isSameEmail
     }
 
   },
@@ -129,8 +133,33 @@ module.exports = {
       _id: updatedDoc._id.toString()
     }; 
       
-  }
-  ,
+  },
+  adminLogin: async({email, password})=>{    
+    const user = await User.findOne({ email: email });
+    if(!user){
+      const error = new Error("Invalid Username or Password");
+      error.code = 401;
+      throw error;
+    }
+    console.log("the user passwrod", password)
+    const isEqual = await bcrypt.compare(password, user.password)
+    if(!isEqual){
+      const error = new Error('Invalid Username or Passwordss');
+      error.code = 401;
+      throw error; 
+    }
+    const token = jwt.sign(
+      { 
+        userId: user._id.toString(),
+        email: user.email
+      },
+      'secretWork'
+    );
+    return {
+      token: token,
+      user
+    }
+  },
   login: async({email})=>{
     const user = await User.findOne({ email: email });
     if(!user){
@@ -605,7 +634,6 @@ module.exports = {
     if(fun > 5.1 || crowd> 5.1 || ratioInput > 3.1 || difficultyGettingDrink> 4.1 || difficultyGettingIn > 5.1)
       throw new Error("Invalid number maximum rating");
     
-    console.log("the business", business)  
     let { accumulatedRating, totalUserCountRating } = business;
     totalUserCountRating = totalUserCountRating + 1;
     accumulatedRating.fun =  (accumulatedRating.fun + fun)
@@ -629,9 +657,71 @@ module.exports = {
       new: true
     });
 
-    console.log("the business", accumulatedRating)  
+    let allBusinessRatings = updatedDoc.allRating;
+    let existingRating = updatedDoc.rating;
+    let newRating = {
+      fun: existingRating.fun,
+      crowd: existingRating.crowd,
+      ratioInput: existingRating.ratioInput,
+      difficultyGettingIn: existingRating.difficultyGettingIn,
+      difficultyGettingDrink:existingRating.difficultyGettingDrink,
+      creationAt: moment().format("YYYY-MM-DD HH:mm:ss")
+    }
+    allBusinessRatings.push(newRating)
+   
+    updatedDoc = await Business.findOneAndUpdate(filter,{
+      allRating: allBusinessRatings
+     }, {
+      new: true
+    });
+
     return updatedDoc.rating;  
   },
+  getCurrentDayExactTimeRating: async({ businessId }) => {
+    let businessData =  await Business.findById(mongoose.Types.ObjectId(businessId)).populate('category googleBusiness')
+    let allRatings = businessData.allRating;
+    let todayDate = moment().format('YYYY-MM-DD HH:mm:ss')
+    
+    var target = moment(todayDate).day();
+    date = new Date,
+    days = ( 7 - ( target - date.getDay() ) % 7 ),
+    time = date.getTime() - ( days * 86400000 );
+    date.setTime(time);
+  
+    date.setHours(moment(todayDate).hours());
+    date.setMinutes(0);
+    date.setSeconds(0);
+    
+    let userVisitDateTime = moment(date).format('YYYY-MM-DD HH:mm:ss');
+    let splittedTime = userVisitDateTime.split(' ')[0].toString();
+
+    let currentDayRatingAfterUserVisit = allRatings.filter(rating => moment(rating.creationAt).format('YYYY-MM-DD HH:mm:ss') >  userVisitDateTime && moment(rating.creationAt).format('YYYY-MM-DD HH:mm:ss').split(' ')[0].toString() === splittedTime )
+    const newarr = currentDayRatingAfterUserVisit.sort((a, b) => {
+      return moment(a.creationAt).diff(b.creationAt);
+    });
+    let ExactTime;
+    let ratingAccordingToTime = {};
+    if(newarr.length>0){
+      ExactTime =  moment().format('hh:mm A') + " " + moment(newarr[0].creationAt).format('dddd').toString()
+      ratingAccordingToTime = {
+        fun: newarr[0].fun,
+        crowd: newarr[0].crowd,
+        ratioInput: newarr[0].ratioInput,
+        difficultyGettingIn: newarr[0].difficultyGettingIn,
+        difficultyGettingDrink: newarr[0].difficultyGettingDrink 
+      } ;
+    }
+    else{
+      ratingAccordingToTime = null
+      ExactTime = null
+    }
+   
+    return {
+      rating: ratingAccordingToTime,
+      getExactTime: ExactTime
+    }
+
+  }, 
   getUserByPhoneNumber: async({ phoneNumber }) => {
     let user = await User.findOne({ phoneNumber });
     return user;
@@ -670,22 +760,16 @@ module.exports = {
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-    const { crowdedPlace, ageInterval, nightLife, barType } = vibeInput;
-    const vibe = {
-      crowdedPlace,
-      ageInterval,
-      nightLife,
-      barType,
-      user
-    }
     
-    const myVibe = new Vibe(vibe);
+    vibeInput.user = user;
+    vibeInput.selectedCategories = vibeInput.selectedCategories.split(',');
+    const myVibe = new Vibe(vibeInput);
     const getMyVibe = await myVibe.save();
     return{
       ...getMyVibe._doc,
-      _id: getMyVibe._id.toString()
+      _id: getMyVibe._id.toString(),
+      selectedCategories: getMyVibe.selectedCategories.toString()
     }
-
   }, 
   updateVibe: async({ vibeInput }, req) => {
     if(!req.isAuth){
@@ -696,35 +780,21 @@ module.exports = {
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-      const { crowdedPlace, ageInterval, nightLife, barType } = vibeInput;
-      const vibe = {
-        crowdedPlace,
-        ageInterval,
-        nightLife,
-        barType,
-        user
-      }  
-
+    console.log("the vibe input", vibeInput)  
+    vibeInput.user = user;
+    vibeInput.selectedCategories = vibeInput.selectedCategories.split(',');
     const filter = { user: req.userId };
-    const update = 
-      { 
-        crowdedPlace,
-        ageInterval,
-        nightLife,
-        barType
-      };
-
-    let updatedDoc = await Vibe.findOneAndUpdate(filter, update, {
+    let updatedDoc = await Vibe.findOneAndUpdate(filter, vibeInput, {
       new: true
     });
-    console.log("the updated doc", updatedDoc);
-    
+
     return{
       ...updatedDoc._doc,
-      _id: updatedDoc._id.toString()
+      _id: updatedDoc._id.toString(),
+      selectedCategories: updatedDoc.selectedCategories.toString()
     }
   },
-  getVibe: async({}, req) =>{
+  getVibe: async({}, req) => {
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
       error.code =401;
@@ -733,7 +803,11 @@ module.exports = {
 
     let vibe =  await Vibe.findOne({ user: req.userId })
     if(vibe)
-      return vibe
+    return{
+      ...vibe._doc,
+      _id: vibe._id.toString(),
+      selectedCategories: vibe.selectedCategories.toString()
+    }
     return null;
   },
   createPost: async({postInput}, req) => {

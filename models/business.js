@@ -47,8 +47,18 @@ const businessSchema = new Schema(
       crowd: { type: Number },
       ratioInput: { type: Number , max: 3},
       difficultyGettingIn: { type: Number},
-      difficultyGettingDrink: { type: Number}
+      difficultyGettingDrink: { type: Number},
     },
+    allRating: [
+      {
+        fun: { type: Number },
+        crowd: { type: Number },
+        ratioInput: { type: Number},
+        difficultyGettingIn: { type: Number},
+        difficultyGettingDrink: { type: Number},
+        creationAt: String
+      }
+    ],
     totalUserCountRating:{
       type: Number,
       default: 0

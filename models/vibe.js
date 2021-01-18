@@ -3,21 +3,31 @@ const Schema = mongoose.Schema;
 
 const vibeSchema = new Schema(
   {
-    crowdedPlace: {
-      type: Boolean,
-      required: true
-    },
-    nightLife:{
-      type: Boolean,
-      required: true
-    },
-    ageInterval: {
+    fun: {
       type: String,
       required: true
     },
-    barType: {
-      type: String
+    party:{
+      type: String,
+      required: true
     },
+    barOrNightClub: {
+      type: String,
+      required: true
+    },
+    crowdLevel: {
+      type: String,
+      required: true
+    },
+    ageDemographic: {
+      type: String,
+      required: true
+    },
+    vibeCategory: {
+      type: String,
+      required: true
+    },
+    selectedCategories: [],
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',

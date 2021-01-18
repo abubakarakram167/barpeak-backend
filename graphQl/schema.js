@@ -55,6 +55,7 @@ module.exports = buildSchema(`
     type: String
     coordinates:[Float]
   }
+  
 
   type Business{
     _id: ID!
@@ -129,6 +130,17 @@ module.exports = buildSchema(`
     profilePic: String
     gender: String,
     phoneNumber: String!
+    password: String
+  }
+
+  input UpdateUserInputData {
+    existingEmail: String!
+    newEmail: String!
+    firstName: String!
+    lastName: String!
+    dob: String 
+    profilePic: String
+    gender: String
   }
 
   input businessInputData{
@@ -160,18 +172,23 @@ module.exports = buildSchema(`
   }
 
   type Vibe{
-    crowdedPlace: Boolean!
-    ageInterval: String!
-    nightLife: Boolean!
-    barType: String
-    user: User!
+    fun: String!
+    party: String!
+    barOrNightClub: String!
+    crowdLevel: String!
+    ageDemographic: String!
+    vibeCategory: String!
+    selectedCategories: String   
   }
 
   input vibeInputData{
-    crowdedPlace: Boolean!
-    ageInterval: String!
-    nightLife: Boolean!
-    barType: String
+    fun: String!
+    party: String!
+    barOrNightClub: String!
+    crowdLevel: String!
+    ageDemographic: String!
+    vibeCategory: String!
+    selectedCategories: String!   
   }
 
   input categoryInputData{
@@ -182,12 +199,12 @@ module.exports = buildSchema(`
 
   type updateUserData{
     user : User!
-    isPasswordChange: Boolean!
+    isSameEmail: Boolean!
   }
 
   type RootMutation {
     createUser(userInput: UserInputData) : AuthData!
-    updateUser(userInput: UserInputData) :updateUserData!
+    updateUser(userInput: UpdateUserInputData ) :updateUserData!
     createBusiness(businessInput: businessInputData) : Business!
     updateBusiness(businessInput: businessInputData) : Business!
     setVibe(vibeInput: vibeInputData): Vibe!
@@ -238,9 +255,14 @@ module.exports = buildSchema(`
     longitude: Float
     radius: Int
   }
+  type exactTimeRating{
+    rating: Rating,
+    getExactTime: String
+  }
 
   type RootQuery{
     login(email: String!): AuthData!
+    adminLogin(email: String!, password: String!): AuthData!
     checkUserAvailable(email: String!): Boolean!
     allBusinesses: [Business!]!
     getNearByLocationBusiness(locationInput: locationInputData): [ Business]
@@ -255,6 +277,7 @@ module.exports = buildSchema(`
     searchByUser(searchValue: String): [Business]
     getFavouriteEstablishments: [Business]
     getUserByPhoneNumber(phoneNumber: String!): User
+    getCurrentDayExactTimeRating(businessId: String!): exactTimeRating
   }
   schema {
     query: RootQuery 

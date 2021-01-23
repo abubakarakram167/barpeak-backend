@@ -3,6 +3,9 @@ var router = require('express').Router()
 const Business = require('./models/business');
 const googleBusiness = require('./models/googleBusiness');
 const Message = require('./models/locations.js');
+const User = require('./models/users');
+const adminSetting = require('./models/AdminSetting');
+
 const axios = require('axios');
 var mongoose = require('mongoose');
 var cloudinary = require('cloudinary').v2;
@@ -10,7 +13,12 @@ const data = require('./jsonData/nightClubs');
 const barData = require('./jsonData/bar');
 const restaurantData = require('./jsonData/restaurant');
 const mixedData = require('./jsonData/mixedThree');
-var otpGenerator = require('otp-generator')
+var nodemailer = require("nodemailer");
+var crypto = require('crypto');
+var schedule = require('node-schedule');
+var uniqid = require('uniqid');
+const moment = require('moment');
+
 
 cloudinary.config({ 
   cloud_name: 'developer-inn', 
@@ -18,42 +26,204 @@ cloudinary.config({
   api_secret: '-FP9u7Z7cyB3TVM7x5dGpXcfDco' 
 });
 
-const accountSid = "ACaf7f7f1c64212e0e1ff0fba4fea6ccb0";
-const authToken = "a0df3ee8905812b20f81e1efa2e549ff";
-const client = require('twilio')(accountSid, authToken);
+var smtpTransport = nodemailer.createTransport({
+  service: "Gmail",
+  auth: {
+      user: "abubakarakram168@gmail.com",
+      pass: "abubakar032449746"
+  }
+});
+var rand,mailOptions,host,link;
 
-router.post('/sendVerificationCode', async function (req, res){
-  const { phoneNo } = req.body;
-  console.log("the phone No", phoneNo)
+router.post('/setScheduleEvent', async function(req, res){  
+  const body = req.body;
+  body.startJobId = uniqid();
+  body.endJobId = uniqid();
+  body.isScheduleApply = true
   try{
-    const data = await client.verify.services('VAcc8f62c04b1f41a282bd3f490fb693ed')
-                            .verifications
-                            .create({to: phoneNo, channel: 'sms'})  
-    res.send({ data: data })          
-    console.log("the data", data)       
+    const filter = { _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da") };
+    let updatedDoc = await adminSetting.findOneAndUpdate(filter, body, {
+      new: true
+    });
+    let [hours, minutes] = body.scheduleStartTime.split(':')
+    console.log("the hours", hours)
+    if(updatedDoc){
+      let rule = new schedule.RecurrenceRule();
+      rule.second = 0;
+      rule.minute = parseInt(minutes);
+      rule.hour = parseInt(hours);
+      rule.dayOfWeek = body.noOfscheduleEventInAWeek;
+      rule.month = [0,11]
+      rule.tz = moment.tz.guess();
+      console.log("the rule", rule)
+      schedule.scheduleJob(body.startJobId, rule, async function () {
+        console.log("in start")
+        const filter = { _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da") };
+        await adminSetting.findOneAndUpdate(filter, { isRunning: true }, {
+          new: true
+        });
+      })
+      let endRule = new schedule.RecurrenceRule();
+      hours = body.scheduleEndTime.split(':')[0]
+      minutes = body.scheduleEndTime.split(':')[1]
+      endRule.second = 0;
+      endRule.minute = minutes;
+      endRule.hour = hours;
+      endRule.dayOfWeek = body.noOfscheduleEventInAWeek;
+      endRule.month = [0,11]
+      endRule.tz = moment.tz.guess();
+      schedule.scheduleJob(body.endJobId, endRule, async function () {
+        console.log("in close")
+        const filter = { _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da") };
+        await adminSetting.findOneAndUpdate(filter, { isRunning: false }, {
+          new: true
+        });
+      })
+
+      res.send({ data: updatedDoc })
+    }
+  }catch(error){
+    res.status(400).json({ error: error.toString() });
+  }
+})
+
+router.post('/stopScheduleEvent', async function(req, res){  
+  try{
+    const filter = { _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da") };
+    const updatedSchedule = await adminSetting.findOneAndUpdate(filter, { isRunning:false, isScheduleApply : false }, {
+      new: true
+    });
+    console.log("the updated schedule", updatedSchedule)
+    let startingCurrentJob = schedule.scheduledJobs[updatedSchedule.startJobId]
+    let endingCurrentJob = schedule.scheduledJobs[updatedSchedule.endJobId]
+    startingCurrentJob.cancel();
+    endingCurrentJob.cancel();
+    res.send({ data: updatedSchedule })
+  }catch(error){
+    console.log("on stoping error", error)
+    res.status(400).json({ error: error.toString() });
+  }
+})
+
+router.post("/createSettings", async function(req, res){
+  const userSetting = {
+    scheduleStartTime: "13:10",
+    scheduleEndTime: "16:00",
+    startJobId: "231",
+    endJobId: "4623",
+    rating: {
+      fun: 2,
+      crowd: 2,
+      ratioInput: 3,
+      difficultyGettingIn: 2,
+      difficultyGettingDrink : 2
+    },
+    noOfUsersUntilShowDefault: 3,
+    noOfscheduleEventInAWeek: [1, 2]
+  }
+  const getSettings = new adminSetting(userSetting)
+  const userCreated = await getSettings.save();
+  res.send({ settings: userCreated })
+
+})
+
+router.get('/getdefaultSettings', async function(req, res){
+  const getAdminSettings = await adminSetting.find();
+  console.log("the get admin sett", getAdminSettings)
+  res.send({ settings: getAdminSettings[0] })
+})
+
+router.post('/sendEmailVerification',async function(req, res){
+  var mykey = crypto.createCipher('aes-128-cbc', 'Halting');
+  let randomString = Math.random().toString(36).substring(7);
+  console.log("random", req.body);
+  var mystr = mykey.update(randomString, 'utf8', 'hex')
+  mystr += mykey.final('hex');
+  const { userId } = req.body;
+  console.log("the request body", userId)
+  const user = await User.findById(mongoose.Types.ObjectId(userId))
+  console.log("the user", user)
+  if(!user)
+    throw new Error("User Not Found")
+
+  const update = {
+    isVerified: {
+      encodeData: randomString,
+      verify: false
+    }
+  }
+  const filter = { _id: mongoose.Types.ObjectId(user._id) };
+  try{  
+    let updatedDoc = await User.findOneAndUpdate( filter ,update, {
+      new: true
+    });
+    
+    if(updatedDoc){
+      host=req.get('host');
+      link="http://"+req.get('host')+"/verify?id="+mystr+`&email=${user.email}`;
+      mailOptions={
+        to : user.email,
+        subject : "Please confirm your Email account",
+        html : `Hello ${user.firstName},<br> Please Click on the link to verify your email.<br><a href="${link}">Click here to verify</a>`
+      }
+      smtpTransport.sendMail(mailOptions, function(error, response){
+        console.log("the error", error)
+      if(error)
+        res.send({ message: "Email Could not send Successfully", status: 500 });
+      else
+        res.send({ message: "Email send Successfully", status: 200 });
+      })
+    }
+    else
+      res.send( { message: "Email Could not send Successfullyss", status: 500  })
   }catch(err){
     console.log("the error", err)
-    if(err.code === 60200){
-    res.status(500).send({ error: 'Your Number is not Correct' })
-    }
-  }          
-            
-})
-router.get("/otpGenerator", async function (req, res){
-  sendOtp.send("+923244974671", "BarPeak", function (error, data) {
-    console.log(data);
-  });
-})
+  }
+});
 
-router.post('/checkVerify', function(req, res){
-  const {phoneNo, code} = req.body;
-  client.verify.services('VAcc8f62c04b1f41a282bd3f490fb693ed')
-      .verificationChecks
-      .create({to: phoneNo, code})
-      .then(verification_check => {
-        res.send({ verification_check })
-      });
-})
+
+router.get('/verify', async function(req,res){
+  console.log(req.protocol+":/"+req.get('host'));
+  var mykey = crypto.createDecipher('aes-128-cbc', 'Halting');
+  const { id: hashedId, email } = req.query;
+  var mystr = mykey.update(hashedId, 'hex', 'utf8')
+  mystr += mykey.final('utf8');
+  const user = await User.findOne({ email })
+  if(!user)
+    res.end("Unauthorized User")
+  console.log("the user", user)
+  const { isVerified } = user;
+  if((req.protocol+"://"+req.get('host'))==("http://"+host)){
+    console.log("Domain is matched. Information is from Authentic email");
+    console.log(`the random var ${mystr} and query value id is ${email} `)
+    if( isVerified.encodeData === mystr){
+      const update = {
+        isVerified: {
+          encodeData: null,
+          verify: true
+        }
+      }
+      const filter = { _id: mongoose.Types.ObjectId(user._id) };
+      try{  
+        let updatedDoc = await User.findOneAndUpdate( filter ,update, {
+          new: true
+        });
+        if(updatedDoc){
+          console.log("email is verified");
+          res.end(`Your ${updatedDoc.email} is verified`)
+        }
+      }catch(err){
+        res.end("Email Not verified")
+      }     
+    }
+    else
+      res.end("<h1>Bad Request</h1>");   
+  }
+  else
+    res.end("<h1>Request is from unknown source");
+
+});
+
 
 router.post('/uploadAllBusinessPhotos', async function(req, res) {
   const getAllBusinesses = await Business.find({}).populate('googleBusiness').skip(2000).limit(479)

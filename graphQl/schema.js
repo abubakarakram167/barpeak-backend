@@ -66,7 +66,6 @@ module.exports = buildSchema(`
     rating: Rating! 
     totalUserCountRating: Int!
     ageInterval: String!,
-    ratioType: String!
     customData: customBusiness
     uploadedPhotos: [photoData]
     customBusiness: Boolean
@@ -149,7 +148,6 @@ module.exports = buildSchema(`
     name: String!
     rating: ratingInput!
     ageInterval: String!
-    ratioType: String!
     customBusiness: Boolean
     customData: customBusinessInput
     photos: String

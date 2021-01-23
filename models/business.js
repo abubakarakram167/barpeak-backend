@@ -73,10 +73,6 @@ const businessSchema = new Schema(
     photoReference:{
       type: String
     },
-    ratioType: {
-      type: String,
-      default: 'boy'
-    },
     googleBusiness: {
       type: Schema.Types.ObjectId,
       ref: 'GoogleBusiness'

@@ -10,7 +10,6 @@ var mongoose = require('mongoose');
 var mainRoutes = require('./routes.js')
 
 app.use(cors());
-app.use(bodyParser.json());
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(auth);
@@ -29,6 +28,8 @@ app.use('/graphql', graphqlHTTP ({
     return  {message, status: code, error: data}
   }
 })) 
+
+
 
 // local project #1
   // var connection = `mongodb://geoff:BarPeakthisweek1!@barpeak.i4yku.mongodb.net:27017,cluster0-shard-00-01.egqju.mongodb.net:27017,cluster0-shard-00-02.egqju.mongodb.net:27017/ProductionBarPeak?ssl=true&replicaSet=atlas-rgxqpa-shard-0&authSource=admin&retryWrites=true&w=majority`

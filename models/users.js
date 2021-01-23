@@ -53,6 +53,15 @@ const userSchema = new Schema({
   },
   appleId: {
     type: String
+  },
+  isVerified: {
+    verify: {
+      type: Boolean,
+      default: false
+    },
+    encodeData: {
+      type: String
+    }
   }
 });
 

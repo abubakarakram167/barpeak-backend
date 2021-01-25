@@ -3,6 +3,7 @@ const Post = require('../models/posts');
 const Business = require('../models/business.js');
 const Category = require('../models/Category.js');
 const Vibe = require('../models/vibe');
+const userEstablishmentRating = require('../models/userEstablishmentRating');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs'); 
@@ -20,7 +21,7 @@ module.exports = {
   },
   createUser: async (args, req) => {
     const { userInput } = args;
-    const {email, firstName, lastName, dob, accountType, phoneNumber, password} = userInput
+    const {email, firstName, lastName, dob, accountType, phoneNumber, password, gender} = userInput
   
     const errors = [];
     if(!validator.isEmail(email)){
@@ -45,7 +46,8 @@ module.exports = {
       dob,
       accountType,
       phoneNumber,
-      password : hashedPassword
+      password : hashedPassword,
+      gender
     })
     const result = await user.save()
   
@@ -617,8 +619,25 @@ module.exports = {
     if(updatedDoc)
       return true
     return false;  
-  }
-  ,
+  },
+  showRateItButtonUntilNextHours: async({ businessId }, req) => {
+    if(!req.isAuth){
+      const error = new Error("Unauthorized User");
+      error.code =401;
+      throw error;
+    }
+    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
+    if(!user) 
+      throw new Error("Invalid user");
+    console.log("the req.user Id", req.userId)
+    console.log("the business", businessId)
+    let establishmentSpecificRating = await userEstablishmentRating.findOne({ userId: req.userId, establishmentId: businessId });
+    console.log("here", establishmentSpecificRating)
+
+    if(establishmentSpecificRating)
+      return false;
+    return true  
+  },
   addRating: async({ rating , businessId}, req) => {
     if(!req.isAuth){
       const error = new Error("Unauthorized User");
@@ -668,7 +687,12 @@ module.exports = {
       creationAt: moment().format("YYYY-MM-DD HH:mm:ss")
     }
     allBusinessRatings.push(newRating)
-   
+    let newEstablishmentRating = new userEstablishmentRating ({
+      userId: req.userId.toString(),
+      establishmentId: businessId.toString()
+     })
+    await newEstablishmentRating.save()  
+
     updatedDoc = await Business.findOneAndUpdate(filter,{
       allRating: allBusinessRatings
      }, {

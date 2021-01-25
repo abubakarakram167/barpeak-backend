@@ -127,7 +127,7 @@ module.exports = buildSchema(`
     dob: String 
     accountType: String
     profilePic: String
-    gender: String,
+    gender: String!,
     phoneNumber: String!
     password: String
   }
@@ -276,6 +276,7 @@ module.exports = buildSchema(`
     getFavouriteEstablishments: [Business]
     getUserByPhoneNumber(phoneNumber: String!): User
     getCurrentDayExactTimeRating(businessId: String!): exactTimeRating
+    showRateItButtonUntilNextHours(businessId: String!): Boolean!
   }
   schema {
     query: RootQuery 

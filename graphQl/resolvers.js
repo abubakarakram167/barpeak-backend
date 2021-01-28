@@ -629,77 +629,88 @@ module.exports = {
     let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
     if(!user) 
       throw new Error("Invalid user");
-    console.log("the req.user Id", req.userId)
-    console.log("the business", businessId)
+    
     let establishmentSpecificRating = await userEstablishmentRating.findOne({ userId: req.userId, establishmentId: businessId });
-    console.log("here", establishmentSpecificRating)
 
+    let showRateItButton ;
     if(establishmentSpecificRating)
-      return false;
-    return true  
+      showRateItButton = false
+    else  
+      showRateItButton = true;
+    
+    
+    return {
+      showRateItButton,
+      ratingSaveTime: establishmentSpecificRating ? establishmentSpecificRating.ratingSaveTime : null
+    }
   },
-  addRating: async({ rating , businessId}, req) => {
-    if(!req.isAuth){
-      const error = new Error("Unauthorized User");
-      error.code =401;
-      throw error;
+  addRating: async({ rating , businessId, ratingSaveTime}, req) => {
+    try{
+      if(!req.isAuth){
+        const error = new Error("Unauthorized User");
+        error.code =401;
+        throw error;
+      }
+      let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
+      if(!user) 
+        throw new Error("Invalid user");
+      
+      let business =  await Business.findById(businessId);;
+      const { fun, crowd, ratioInput, difficultyGettingIn, difficultyGettingDrink } = rating;
+      if(fun > 5.1 || crowd> 5.1 || ratioInput > 3.1 || difficultyGettingDrink> 4.1 || difficultyGettingIn > 5.1)
+        throw new Error("Invalid number maximum rating");
+      
+      let { accumulatedRating, totalUserCountRating } = business;
+      totalUserCountRating = totalUserCountRating + 1;
+      accumulatedRating.fun =  (accumulatedRating.fun + fun)
+      accumulatedRating.crowd = (accumulatedRating.crowd + crowd)
+      accumulatedRating.ratioInput = (accumulatedRating.ratioInput + ratioInput)
+      accumulatedRating.difficultyGettingIn = (accumulatedRating.difficultyGettingIn + difficultyGettingIn)
+      accumulatedRating.difficultyGettingDrink = (accumulatedRating.difficultyGettingDrink + difficultyGettingDrink)
+
+      const filter = { _id: mongoose.Types.ObjectId(businessId) };
+      let updatedDoc = await Business.findOneAndUpdate(filter,{
+        rating:{
+        fun: (accumulatedRating.fun)/totalUserCountRating,
+        crowd: (accumulatedRating.crowd)/totalUserCountRating,
+        ratioInput: (accumulatedRating.ratioInput)/totalUserCountRating,
+        difficultyGettingIn: (accumulatedRating.difficultyGettingIn)/totalUserCountRating,
+        difficultyGettingDrink: (accumulatedRating.difficultyGettingDrink)/totalUserCountRating,
+        },
+        totalUserCountRating,
+        accumulatedRating
+      }, {
+        new: true
+      });
+
+      let allBusinessRatings = updatedDoc.allRating;
+      let existingRating = updatedDoc.rating;
+      let newRating = {
+        fun: existingRating.fun,
+        crowd: existingRating.crowd,
+        ratioInput: existingRating.ratioInput,
+        difficultyGettingIn: existingRating.difficultyGettingIn,
+        difficultyGettingDrink:existingRating.difficultyGettingDrink,
+        creationAt: moment().format("YYYY-MM-DD HH:mm:ss")
+      }
+      allBusinessRatings.push(newRating)
+      let newEstablishmentRating = new userEstablishmentRating ({
+        userId: req.userId.toString(),
+        establishmentId: businessId.toString(),
+        ratingSaveTime
+      })
+      await newEstablishmentRating.save()  
+
+      updatedDoc = await Business.findOneAndUpdate(filter,{
+        allRating: allBusinessRatings
+      }, {
+        new: true
+      });
+
+      return updatedDoc.rating;  
+    }catch(err){
+      console.log("the err", err)
     }
-    let user =  await User.findById(mongoose.Types.ObjectId(req.userId));
-    if(!user) 
-      throw new Error("Invalid user");
-    
-    let business =  await Business.findById(businessId);;
-    const { fun, crowd, ratioInput, difficultyGettingIn, difficultyGettingDrink } = rating;
-    if(fun > 5.1 || crowd> 5.1 || ratioInput > 3.1 || difficultyGettingDrink> 4.1 || difficultyGettingIn > 5.1)
-      throw new Error("Invalid number maximum rating");
-    
-    let { accumulatedRating, totalUserCountRating } = business;
-    totalUserCountRating = totalUserCountRating + 1;
-    accumulatedRating.fun =  (accumulatedRating.fun + fun)
-    accumulatedRating.crowd = (accumulatedRating.crowd + crowd)
-    accumulatedRating.ratioInput = (accumulatedRating.ratioInput + ratioInput)
-    accumulatedRating.difficultyGettingIn = (accumulatedRating.difficultyGettingIn + difficultyGettingIn)
-    accumulatedRating.difficultyGettingDrink = (accumulatedRating.difficultyGettingDrink + difficultyGettingDrink)
-
-    const filter = { _id: mongoose.Types.ObjectId(businessId) };
-    let updatedDoc = await Business.findOneAndUpdate(filter,{
-      rating:{
-      fun: (accumulatedRating.fun)/totalUserCountRating,
-      crowd: (accumulatedRating.crowd)/totalUserCountRating,
-      ratioInput: (accumulatedRating.ratioInput)/totalUserCountRating,
-      difficultyGettingIn: (accumulatedRating.difficultyGettingIn)/totalUserCountRating,
-      difficultyGettingDrink: (accumulatedRating.difficultyGettingDrink)/totalUserCountRating,
-      },
-      totalUserCountRating,
-      accumulatedRating
-     }, {
-      new: true
-    });
-
-    let allBusinessRatings = updatedDoc.allRating;
-    let existingRating = updatedDoc.rating;
-    let newRating = {
-      fun: existingRating.fun,
-      crowd: existingRating.crowd,
-      ratioInput: existingRating.ratioInput,
-      difficultyGettingIn: existingRating.difficultyGettingIn,
-      difficultyGettingDrink:existingRating.difficultyGettingDrink,
-      creationAt: moment().format("YYYY-MM-DD HH:mm:ss")
-    }
-    allBusinessRatings.push(newRating)
-    let newEstablishmentRating = new userEstablishmentRating ({
-      userId: req.userId.toString(),
-      establishmentId: businessId.toString()
-     })
-    await newEstablishmentRating.save()  
-
-    updatedDoc = await Business.findOneAndUpdate(filter,{
-      allRating: allBusinessRatings
-     }, {
-      new: true
-    });
-
-    return updatedDoc.rating;  
   },
   getCurrentDayExactTimeRating: async({ businessId }) => {
     let businessData =  await Business.findById(mongoose.Types.ObjectId(businessId)).populate('category googleBusiness')

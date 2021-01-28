@@ -208,7 +208,7 @@ module.exports = buildSchema(`
     setVibe(vibeInput: vibeInputData): Vibe!
     updateVibe(vibeInput: vibeInputData): Vibe!
     updateRadius(radius: Int!): User!
-    addRating(rating: ratingInput!, businessId: String!): Rating!
+    addRating(rating: ratingInput!, businessId: String!, ratingSaveTime: String!): Rating!
     createCategory(category: categoryInputData, id: String!): Category!
     deleteBusiness(id: String!): Boolean!
     deleteCategory(categoryId: String!): Boolean!
@@ -257,6 +257,10 @@ module.exports = buildSchema(`
     rating: Rating,
     getExactTime: String
   }
+  type showRateItButtonData{
+    showRateItButton: Boolean
+    ratingSaveTime: String
+  }
 
   type RootQuery{
     login(email: String!): AuthData!
@@ -276,7 +280,7 @@ module.exports = buildSchema(`
     getFavouriteEstablishments: [Business]
     getUserByPhoneNumber(phoneNumber: String!): User
     getCurrentDayExactTimeRating(businessId: String!): exactTimeRating
-    showRateItButtonUntilNextHours(businessId: String!): Boolean!
+    showRateItButtonUntilNextHours(businessId: String!): showRateItButtonData!
   }
   schema {
     query: RootQuery 

@@ -10,8 +10,12 @@ const userEstablishmentRating = new Schema({
     type: String,
     required: true
   },
+  ratingSaveTime: {
+    type: String,
+    required: true
+  },
   expire_at: {
-    type: Date, default: Date.now, expires: 100
+    type: Date, default: Date.now, expires: 600
   } 
  
 });

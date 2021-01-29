@@ -657,10 +657,12 @@ module.exports = {
       
       let business =  await Business.findById(businessId);;
       const { fun, crowd, ratioInput, difficultyGettingIn, difficultyGettingDrink } = rating;
+      console.log("in the backend the value comes", rating)
       if(fun > 5.1 || crowd> 5.1 || ratioInput > 3.1 || difficultyGettingDrink> 4.1 || difficultyGettingIn > 5.1)
         throw new Error("Invalid number maximum rating");
       
       let { accumulatedRating, totalUserCountRating } = business;
+      let businessRating = business.rating;
       totalUserCountRating = totalUserCountRating + 1;
       accumulatedRating.fun =  (accumulatedRating.fun + fun)
       accumulatedRating.crowd = (accumulatedRating.crowd + crowd)
@@ -671,11 +673,11 @@ module.exports = {
       const filter = { _id: mongoose.Types.ObjectId(businessId) };
       let updatedDoc = await Business.findOneAndUpdate(filter,{
         rating:{
-        fun: (accumulatedRating.fun)/totalUserCountRating,
-        crowd: (accumulatedRating.crowd)/totalUserCountRating,
-        ratioInput: (accumulatedRating.ratioInput)/totalUserCountRating,
-        difficultyGettingIn: (accumulatedRating.difficultyGettingIn)/totalUserCountRating,
-        difficultyGettingDrink: (accumulatedRating.difficultyGettingDrink)/totalUserCountRating,
+        fun: ((accumulatedRating.fun)/totalUserCountRating).toFixed(2),
+        crowd: ((accumulatedRating.crowd)/totalUserCountRating).toFixed(2),
+        ratioInput: ((accumulatedRating.ratioInput )/totalUserCountRating).toFixed(2),
+        difficultyGettingIn: (( accumulatedRating.difficultyGettingIn)/totalUserCountRating).toFixed(2),
+        difficultyGettingDrink: ((accumulatedRating.difficultyGettingDrink )/totalUserCountRating).toFixed(2),
         },
         totalUserCountRating,
         accumulatedRating
@@ -697,7 +699,8 @@ module.exports = {
       let newEstablishmentRating = new userEstablishmentRating ({
         userId: req.userId.toString(),
         establishmentId: businessId.toString(),
-        ratingSaveTime
+        ratingSaveTime,
+        createdAt: Date.now()
       })
       await newEstablishmentRating.save()  
 

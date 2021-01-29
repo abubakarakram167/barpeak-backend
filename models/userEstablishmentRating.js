@@ -14,9 +14,7 @@ const userEstablishmentRating = new Schema({
     type: String,
     required: true
   },
-  expire_at: {
-    type: Date, default: Date.now, expires: 600
-  } 
+  createdAt: { type: Date, expires: '59m', default: Date.now }
  
 });
 

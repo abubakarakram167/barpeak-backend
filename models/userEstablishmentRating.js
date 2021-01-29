@@ -14,9 +14,7 @@ const userEstablishmentRating = new Schema({
     type: String,
     required: true
   },
-  createdAt: Date 
+  createdAt: {type: Date, default: Date.now, expires: 3600} 
 });
-
-userEstablishmentRating.index( { "createdAt": 1 }, { expireAfterSeconds: 3600 } )
 
 module.exports = mongoose.model('UserEstablishmentRating', userEstablishmentRating );

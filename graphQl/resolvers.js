@@ -699,8 +699,7 @@ module.exports = {
       let newEstablishmentRating = new userEstablishmentRating ({
         userId: req.userId.toString(),
         establishmentId: businessId.toString(),
-        ratingSaveTime,
-        createdAt: Date.now()
+        ratingSaveTime
       })
       await newEstablishmentRating.save()  
 

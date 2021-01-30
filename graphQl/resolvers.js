@@ -646,7 +646,7 @@ module.exports = {
       ratingSaveTime: establishmentSpecificRating ? establishmentSpecificRating.ratingSaveTime : null
     }
   },
-  addRating: async({ rating , businessId, ratingSaveTime}, req) => {
+  addRating: async({ rating , businessId, ratingSaveTime, performTime}, req) => {
     try{
       if(!req.isAuth){
         const error = new Error("Unauthorized User");
@@ -704,9 +704,9 @@ module.exports = {
         ratingSaveTime
       })
       let establishmentRatingDoc = await newEstablishmentRating.save()  
-     
-
-      let local = moment(parseInt(ratingSaveTime)).local().add(5, 'minutes')
+      
+      console.log("the perform", performTime)
+      let local = moment(performTime).add(5, 'minutes')
       console.log("the today",  local.format())
       console.log("establishmentRatingDoc", establishmentRatingDoc)
       schedule.scheduleJob(local.format(), async function () {

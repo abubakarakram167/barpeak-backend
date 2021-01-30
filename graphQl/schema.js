@@ -208,7 +208,7 @@ module.exports = buildSchema(`
     setVibe(vibeInput: vibeInputData): Vibe!
     updateVibe(vibeInput: vibeInputData): Vibe!
     updateRadius(radius: Int!): User!
-    addRating(rating: ratingInput!, businessId: String!, ratingSaveTime: String!): Rating!
+    addRating(rating: ratingInput!, businessId: String!, ratingSaveTime: String!, performTime: String!): Rating!
     createCategory(category: categoryInputData, id: String!): Category!
     deleteBusiness(id: String!): Boolean!
     deleteCategory(categoryId: String!): Boolean!

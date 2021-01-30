@@ -11,6 +11,8 @@ const validator = require('validator');
 const moment = require('moment');
 var jwt = require('jsonwebtoken');
 var ObjectId = require('mongodb').ObjectID;
+var schedule = require('node-schedule');
+
 
 module.exports = {
   hello(){
@@ -701,7 +703,17 @@ module.exports = {
         establishmentId: businessId.toString(),
         ratingSaveTime
       })
-      await newEstablishmentRating.save()  
+      let establishmentRatingDoc = await newEstablishmentRating.save()  
+     
+
+      let local = moment(parseInt(ratingSaveTime)).local().add(5, 'minutes')
+      console.log("the today",  local.format())
+      console.log("establishmentRatingDoc", establishmentRatingDoc)
+      schedule.scheduleJob(local.format(), async function () {
+        console.log("in executinggg")
+        await  userEstablishmentRating.deleteOne({_id: mongoose.Types.ObjectId(establishmentRatingDoc._id) })
+      })
+
 
       updatedDoc = await Business.findOneAndUpdate(filter,{
         allRating: allBusinessRatings

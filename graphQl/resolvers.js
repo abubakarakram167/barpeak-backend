@@ -632,18 +632,19 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     
-    let establishmentSpecificRating = await userEstablishmentRating.findOne({ userId: req.userId, establishmentId: businessId });
+    let establishmentSpecificRating = await userEstablishmentRating.find({ userId: req.userId, establishmentId: businessId })
+    console.log("the establishment rating", establishmentSpecificRating)
 
     let showRateItButton ;
-    if(establishmentSpecificRating)
+    if(establishmentSpecificRating.length>0 && establishmentSpecificRating[0]  )
       showRateItButton = false
     else  
       showRateItButton = true;
     
-    
+    console.log("show rate button", showRateItButton)
     return {
       showRateItButton,
-      ratingSaveTime: establishmentSpecificRating ? establishmentSpecificRating.ratingSaveTime : null
+      ratingSaveTime: establishmentSpecificRating[0] ? establishmentSpecificRating[0].ratingSaveTime : null
     }
   },
   addRating: async({ rating , businessId, ratingSaveTime, performTime}, req) => {

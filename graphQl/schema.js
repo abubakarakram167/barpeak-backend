@@ -127,7 +127,7 @@ module.exports = buildSchema(`
     dob: String 
     accountType: String
     profilePic: String
-    gender: String!,
+    gender: String,
     phoneNumber: String!
     password: String
   }

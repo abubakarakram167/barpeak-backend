@@ -636,7 +636,7 @@ module.exports = {
     console.log("the establishment rating", establishmentSpecificRating)
 
     let showRateItButton ;
-    if(establishmentSpecificRating.length>0 && establishmentSpecificRating[0]  )
+    if(establishmentSpecificRating.length>0 && establishmentSpecificRating[0] )
       showRateItButton = false
     else  
       showRateItButton = true;

@@ -37,7 +37,7 @@ app.use('/graphql', graphqlHTTP ({
 
 // production
   var connection = `mongodb+srv://geoff:BarPeakthisweek1!@barpeak.i4yku.mongodb.net/ProductionBarPeak?retryWrites=true&w=majority`
-  var hotspot = `mongodb://geoff:BarPeakthisweek1!@barpeak-shard-00-00.i4yku.mongodb.net:27017,barpeak-shard-00-01.i4yku.mongodb.net:27017,barpeak-shard-00-02.i4yku.mongodb.net:27017/ProductionBarPeak?ssl=true&replicaSet=atlas-12fzoe-shard-0&authSource=admin&retryWrites=true&w=majority`
+  //var hotspot = `mongodb://geoff:BarPeakthisweek1!@barpeak-shard-00-00.i4yku.mongodb.net:27017,barpeak-shard-00-01.i4yku.mongodb.net:27017,barpeak-shard-00-02.i4yku.mongodb.net:27017/ProductionBarPeak?ssl=true&replicaSet=atlas-12fzoe-shard-0&authSource=admin&retryWrites=true&w=majority`
   // cloud test 
 
 // var originalTwo = `mongodb+srv://abubakar:abubakar@cluster0.yhjwa.mongodb.net/clouding?retryWrites=true&w=majority`;

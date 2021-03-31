@@ -56,6 +56,7 @@ const adminSettingSchema = new Schema({
   isScheduleApply: {
     type: Boolean,
   },
+  vibeCategoryPinsColor: [],
   noOfscheduleEventInAWeek: []
 });
 

@@ -706,8 +706,8 @@ module.exports = {
       })
       let establishmentRatingDoc = await newEstablishmentRating.save()  
       
-      console.log("the perform", performTime)
-      let local = moment(performTime).add(59, 'minutes')
+      // console.log("the perform", performTime)
+      let local = moment(performTime).add(2, 'minutes')
       console.log("the today",  local.format())
       console.log("establishmentRatingDoc", establishmentRatingDoc)
       schedule.scheduleJob(local.format(), async function () {

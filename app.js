@@ -32,12 +32,12 @@ app.use('/graphql', graphqlHTTP ({
 
 
 // local project #1
-  // var connection = `mongodb://geoff:BarPeakthisweek1!@barpeak.i4yku.mongodb.net:27017,cluster0-shard-00-01.egqju.mongodb.net:27017,cluster0-shard-00-02.egqju.mongodb.net:27017/ProductionBarPeak?ssl=true&replicaSet=atlas-rgxqpa-shard-0&authSource=admin&retryWrites=true&w=majority`
+// var connection = `mongodb://geoff:BarPeakthisweek1!@barpeak.i4yku.mongodb.net:27017,cluster0-shard-00-01.egqju.mongodb.net:27017,cluster0-shard-00-02.egqju.mongodb.net:27017/ProductionBarPeak?ssl=true&replicaSet=atlas-rgxqpa-shard-0&authSource=admin&retryWrites=true&w=majority`
 // var original = `mongodb+srv://abubakar:abubakar@cluster0.egqju.mongodb.net/graphql-practise?retryWrites=true&w=majority`;
 
 // production
   var connection = `mongodb+srv://geoff:BarPeakthisweek1!@barpeak.i4yku.mongodb.net/ProductionBarPeak?retryWrites=true&w=majority`
-  //var hotspot = `mongodb://geoff:BarPeakthisweek1!@barpeak-shard-00-00.i4yku.mongodb.net:27017,barpeak-shard-00-01.i4yku.mongodb.net:27017,barpeak-shard-00-02.i4yku.mongodb.net:27017/ProductionBarPeak?ssl=true&replicaSet=atlas-12fzoe-shard-0&authSource=admin&retryWrites=true&w=majority`
+  var hotspot = `mongodb://geoff:BarPeakthisweek1!@barpeak-shard-00-00.i4yku.mongodb.net:27017,barpeak-shard-00-01.i4yku.mongodb.net:27017,barpeak-shard-00-02.i4yku.mongodb.net:27017/ProductionBarPeak?ssl=true&replicaSet=atlas-12fzoe-shard-0&authSource=admin&retryWrites=true&w=majority`
   // cloud test 
 
 // var originalTwo = `mongodb+srv://abubakar:abubakar@cluster0.yhjwa.mongodb.net/clouding?retryWrites=true&w=majority`;
@@ -47,7 +47,7 @@ var port = process.env.PORT || 3000;
 console.log("the port", port)
 
 
-mongoose.connect( connection , { useNewUrlParser: true })
+mongoose.connect( connection, { useNewUrlParser: true })
         .then(()=>{  
           app.listen(port, function(){
             console.log("Express server listening on port %d in %s mode", app.settings.env);

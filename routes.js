@@ -37,6 +37,17 @@ var smtpTransport = nodemailer.createTransport({
 });
 var rand,mailOptions,host,link;
 
+router.get('/countAllBusinesses', async function(req, res){
+  var totalCount = 0;
+  var businesses = await googleBusiness.find({});
+  for (let b of businesses){
+    if( b.opening_hours.weekday_text.length ){
+      totalCount = totalCount + 1;
+    }
+  }
+  console.log("all businesses", totalCount);
+})
+
 router.post('/setScheduleEvent', async function(req, res){  
   const body = req.body;
   body.startJobId = uniqid();
@@ -133,6 +144,18 @@ router.get('/getdefaultSettings', async function(req, res){
   const getAdminSettings = await adminSetting.find();
   console.log("the get admin sett", getAdminSettings)
   res.send({ settings: getAdminSettings[0] })
+})
+
+router.post('/updateMapPinColor', async function(req, res){
+  const filter = { _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da") };
+  
+  console.log("here comess... the data", req.body.vibeCategories)
+
+  const updatedMapPinsData = await adminSetting.findOneAndUpdate(filter, { isRunning:true, vibeCategoryPinsColor: req.body.vibeCategories}, {
+    new: true
+  });
+  console.log("here the updateMap", updatedMapPinsData)
+  res.send({ settings: updatedMapPinsData })
 })
 
 router.post('/sendEmailVerification',async function(req, res){

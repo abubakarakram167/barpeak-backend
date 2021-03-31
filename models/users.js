@@ -24,7 +24,7 @@ const userSchema = new Schema({
   radius:{
     type: String,
     required: true,
-    default: 5000
+    default: 24200
   },
   profilePic: {
     type: String,

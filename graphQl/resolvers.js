@@ -696,25 +696,25 @@ module.exports = {
         ratioInput: existingRating.ratioInput,
         difficultyGettingIn: existingRating.difficultyGettingIn,
         difficultyGettingDrink:existingRating.difficultyGettingDrink,
-        creationAt: moment().format("YYYY-MM-DD HH:mm:ss")
+        creationAt: performTime
       }
+      
       allBusinessRatings.push(newRating)
       let newEstablishmentRating = new userEstablishmentRating ({
         userId: req.userId.toString(),
         establishmentId: businessId.toString(),
-        ratingSaveTime
+        ratingSaveTime: performTime
       })
-      let establishmentRatingDoc = await newEstablishmentRating.save()  
+      await newEstablishmentRating.save()  
       
       // console.log("the perform", performTime)
-      let local = moment(performTime).add(2, 'minutes')
-      console.log("the today",  local.format())
-      console.log("establishmentRatingDoc", establishmentRatingDoc)
-      schedule.scheduleJob(local.format(), async function () {
-        console.log("in executinggg")
-        await  userEstablishmentRating.deleteOne({_id: mongoose.Types.ObjectId(establishmentRatingDoc._id) })
-      })
-
+      // let local = moment(performTime).add(2, 'minutes')
+      // console.log("the today",  local.format())
+      // console.log("establishmentRatingDoc", establishmentRatingDoc)
+      // schedule.scheduleJob(local.format(), async function () {
+      //   console.log("in executinggg")
+      //   await  userEstablishmentRating.deleteOne({_id: mongoose.Types.ObjectId(establishmentRatingDoc._id) })
+      // })
 
       updatedDoc = await Business.findOneAndUpdate(filter,{
         allRating: allBusinessRatings

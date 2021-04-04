@@ -55,7 +55,9 @@ module.exports = buildSchema(`
     type: String
     coordinates:[Float]
   }
-  
+  type RatingCreation{
+    creationAt: String
+  }
 
   type Business{
     _id: ID!
@@ -63,15 +65,16 @@ module.exports = buildSchema(`
     category: [Category]
     name: String!
     createdBy: User!
+    allRating: [RatingCreation] 
     rating: Rating! 
     totalUserCountRating: Int!
-    ageInterval: String!,
+    ageInterval: String!
     customData: customBusiness
     uploadedPhotos: [photoData]
     customBusiness: Boolean
     googleBusiness: googleBusinessData
     addedByAdmin: Boolean
-    location: location  
+    location: location 
   }
 
   type closeTimeData{

@@ -154,6 +154,7 @@ module.exports = buildSchema(`
     customBusiness: Boolean
     customData: customBusinessInput
     photos: String
+    openingHours: String
   }
   
   input customBusinessInput{

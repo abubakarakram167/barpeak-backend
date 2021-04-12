@@ -1,6 +1,7 @@
 const User = require('../models/users');
 const Post = require('../models/posts');
 const Business = require('../models/business.js');
+const googleBusiness = require('../models/googleBusiness');
 const Category = require('../models/Category.js');
 const Vibe = require('../models/vibe');
 const userEstablishmentRating = require('../models/userEstablishmentRating');
@@ -543,10 +544,11 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     
-    const { id, category, name, rating, ageInterval, ratioType, photos, customData } = businessInput;
+    const { id, category, name, rating, ageInterval, ratioType, photos, customData, openingHours } = businessInput;
+    // console.log("in backend openingHours", JSON.parse(openingHours.replace( '\\"', /"/g)) )
+    const parseOpeningHours = JSON.parse(openingHours.replace( '\\"', /"/g));
     let businessSelectedCategories = [];
     let allCategories = category.split(',');
-    console.log("all catgories", allCategories)
     allCategories.map((id)=>{
       businessSelectedCategories.push(mongoose.Types.ObjectId(id));
     })
@@ -576,13 +578,21 @@ module.exports = {
       }
     }
 
-    
-
     let updatedDoc = await Business.findOneAndUpdate(filter, update, {
       new: true
     });
-    console.log("the updated doc", updatedDoc);
-    
+    console.log("the updated doc", updatedDoc.googleBusiness);
+    const googleFilter = { _id: mongoose.Types.ObjectId(updatedDoc.googleBusiness) }
+    const googleUpdate = {
+      opening_hours : {
+        periods: parseOpeningHours
+      }
+    }
+
+    let updatedDocGoogle = await  googleBusiness.findOneAndUpdate(googleFilter, googleUpdate , {
+      new: true
+    });
+    console.log("the updated Doc Google", updatedDocGoogle)
     return{
       ...updatedDoc._doc,
       _id: updatedDoc._id.toString(),

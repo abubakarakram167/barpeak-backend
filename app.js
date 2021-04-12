@@ -47,7 +47,7 @@ var port = process.env.PORT || 3000;
 console.log("the port", port)
 
 
-mongoose.connect( hotspot, { useNewUrlParser: true })
+mongoose.connect( connection, { useNewUrlParser: true })
         .then(()=>{  
           app.listen(port, function(){
             console.log("Express server listening on port %d in %s mode", app.settings.env);

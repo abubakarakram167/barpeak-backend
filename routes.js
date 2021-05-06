@@ -48,6 +48,21 @@ router.get('/countAllBusinesses', async function(req, res){
   console.log("all businesses", totalCount);
 })
 
+router.post('/setDefaultSettings', async function(req, res){  
+  const body = req.body;
+  console.log("the body in getting backedn", body);
+  try{
+    const filter = { _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da") };
+    let updatedDoc = await adminSetting.findOneAndUpdate(filter, body, {
+      new: true
+    });
+    console.log("the updated doc", updatedDoc)
+    res.send({ data: updatedDoc })
+  }catch(error){
+    res.status(400).json({ error: error.toString() });
+  }
+})
+
 router.post('/setScheduleEvent', async function(req, res){  
   const body = req.body;
   body.startJobId = uniqid();

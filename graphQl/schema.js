@@ -57,6 +57,11 @@ module.exports = buildSchema(`
   }
   type RatingCreation{
     creationAt: String
+    fun: Float!
+    crowd: Float!
+    ratioInput: Float!
+    difficultyGettingIn: Float!
+    difficultyGettingDrink: Float!
   }
 
   type Business{
@@ -66,7 +71,7 @@ module.exports = buildSchema(`
     name: String!
     createdBy: User!
     allRating: [RatingCreation] 
-    rating: Rating! 
+    rating: RatingCreation! 
     totalUserCountRating: Int!
     ageInterval: String!
     customData: customBusiness
@@ -171,6 +176,7 @@ module.exports = buildSchema(`
     ratioInput: Float!
     difficultyGettingIn: Float!
     difficultyGettingDrink: Float!
+    createdAt: String!
   }
 
   type Vibe{

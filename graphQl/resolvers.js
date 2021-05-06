@@ -545,7 +545,6 @@ module.exports = {
       throw new Error("Invalid user");
     
     const { id, category, name, rating, ageInterval, ratioType, photos, customData, openingHours } = businessInput;
-    // console.log("in backend openingHours", JSON.parse(openingHours.replace( '\\"', /"/g)) )
     const parseOpeningHours = JSON.parse(openingHours.replace( '\\"', /"/g));
     let businessSelectedCategories = [];
     let allCategories = category.split(',');
@@ -581,7 +580,7 @@ module.exports = {
     let updatedDoc = await Business.findOneAndUpdate(filter, update, {
       new: true
     });
-    console.log("the updated doc", updatedDoc.googleBusiness);
+    
     const googleFilter = { _id: mongoose.Types.ObjectId(updatedDoc.googleBusiness) }
     const googleUpdate = {
       opening_hours : {

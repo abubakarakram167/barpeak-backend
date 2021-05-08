@@ -642,8 +642,11 @@ module.exports = {
       throw new Error("Invalid user");
     
     let establishmentSpecificRating = await userEstablishmentRating.find({ userId: req.userId, establishmentId: businessId })
-    console.log("the establishment rating", establishmentSpecificRating)
+    establishmentSpecificRating = establishmentSpecificRating.sort(function (a, b) {
+      return new Date(b.ratingSaveTime) - new Date(a.ratingSaveTime);
+    })
 
+    console.log("the establishment rating", establishmentSpecificRating)
     let showRateItButton ;
     if(establishmentSpecificRating.length>0 && establishmentSpecificRating[0] )
       showRateItButton = false
@@ -667,7 +670,7 @@ module.exports = {
       if(!user) 
         throw new Error("Invalid user");
       
-      let business =  await Business.findById(businessId);;
+      let business =  await Business.findById(businessId);
       const { fun, crowd, ratioInput, difficultyGettingIn, difficultyGettingDrink } = rating;
       console.log("in the backend the value comes", rating)
       if(fun > 5.1 || crowd> 5.1 || ratioInput > 3.1 || difficultyGettingDrink> 4.1 || difficultyGettingIn > 5.1)
@@ -676,35 +679,37 @@ module.exports = {
       let { accumulatedRating, totalUserCountRating } = business;
       let businessRating = business.rating;
       totalUserCountRating = totalUserCountRating + 1;
-      accumulatedRating.fun =  (accumulatedRating.fun + fun)
-      accumulatedRating.crowd = (accumulatedRating.crowd + crowd)
-      accumulatedRating.ratioInput = (accumulatedRating.ratioInput + ratioInput)
-      accumulatedRating.difficultyGettingIn = (accumulatedRating.difficultyGettingIn + difficultyGettingIn)
-      accumulatedRating.difficultyGettingDrink = (accumulatedRating.difficultyGettingDrink + difficultyGettingDrink)
+      accumulatedRating.fun =  ((accumulatedRating.fun + fun)/totalUserCountRating ).toFixed(2)
+      accumulatedRating.crowd = ((accumulatedRating.crowd + crowd)/totalUserCountRating ).toFixed(2)
+      accumulatedRating.ratioInput = ((accumulatedRating.ratioInput + ratioInput)/totalUserCountRating ).toFixed(2)
+      accumulatedRating.difficultyGettingIn = ((accumulatedRating.difficultyGettingIn + difficultyGettingIn)/totalUserCountRating).toFixed(2)
+      accumulatedRating.difficultyGettingDrink = ((accumulatedRating.difficultyGettingDrink + difficultyGettingDrink)/totalUserCountRating).toFixed(2)
 
       const filter = { _id: mongoose.Types.ObjectId(businessId) };
-      let updatedDoc = await Business.findOneAndUpdate(filter,{
-        rating:{
-        fun: ((accumulatedRating.fun)/totalUserCountRating).toFixed(2),
-        crowd: ((accumulatedRating.crowd)/totalUserCountRating).toFixed(2),
-        ratioInput: ((accumulatedRating.ratioInput )/totalUserCountRating).toFixed(2),
-        difficultyGettingIn: (( accumulatedRating.difficultyGettingIn)/totalUserCountRating).toFixed(2),
-        difficultyGettingDrink: ((accumulatedRating.difficultyGettingDrink )/totalUserCountRating).toFixed(2),
-        },
-        totalUserCountRating,
-        accumulatedRating
-      }, {
-        new: true
-      });
+      let updatedDoc;
+      // let updatedDoc = await Business.findOneAndUpdate(filter,{
+      //   rating:{
+      //     fun: ((accumulatedRating.fun)/totalUserCountRating).toFixed(2),
+      //     crowd: ((accumulatedRating.crowd)/totalUserCountRating).toFixed(2),
+      //     ratioInput: ((accumulatedRating.ratioInput )/totalUserCountRating).toFixed(2),
+      //     difficultyGettingIn: (( accumulatedRating.difficultyGettingIn)/totalUserCountRating).toFixed(2),
+      //     difficultyGettingDrink: ((accumulatedRating.difficultyGettingDrink )/totalUserCountRating).toFixed(2),
+      //     creationAt: businessRating.creationAt
+      //   },
+      //   totalUserCountRating,
+      //   accumulatedRating
+      // }, {
+      //   new: true
+      // });
 
-      let allBusinessRatings = updatedDoc.allRating;
-      let existingRating = updatedDoc.rating;
+      let allBusinessRatings = business.allRating;
+  
       let newRating = {
-        fun: existingRating.fun,
-        crowd: existingRating.crowd,
-        ratioInput: existingRating.ratioInput,
-        difficultyGettingIn: existingRating.difficultyGettingIn,
-        difficultyGettingDrink:existingRating.difficultyGettingDrink,
+        fun,
+        crowd,
+        ratioInput,
+        difficultyGettingIn,
+        difficultyGettingDrink,
         creationAt: performTime
       }
       
@@ -715,22 +720,14 @@ module.exports = {
         ratingSaveTime: performTime
       })
       await newEstablishmentRating.save()  
-      
-      // console.log("the perform", performTime)
-      // let local = moment(performTime).add(2, 'minutes')
-      // console.log("the today",  local.format())
-      // console.log("establishmentRatingDoc", establishmentRatingDoc)
-      // schedule.scheduleJob(local.format(), async function () {
-      //   console.log("in executinggg")
-      //   await  userEstablishmentRating.deleteOne({_id: mongoose.Types.ObjectId(establishmentRatingDoc._id) })
-      // })
-
       updatedDoc = await Business.findOneAndUpdate(filter,{
-        allRating: allBusinessRatings
+        allRating: allBusinessRatings,
+        totalUserCountRating,
+        accumulatedRating
       }, {
         new: true
       });
-
+      console.log("the ratinggg", updatedDoc)
       return updatedDoc.rating;  
     }catch(err){
       console.log("the err", err)

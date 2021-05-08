@@ -176,7 +176,7 @@ module.exports = buildSchema(`
     ratioInput: Float!
     difficultyGettingIn: Float!
     difficultyGettingDrink: Float!
-    createdAt: String!
+    creationAt: String!
   }
 
   type Vibe{

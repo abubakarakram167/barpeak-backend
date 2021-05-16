@@ -49,10 +49,22 @@ router.get('/countAllBusinesses', async function(req, res){
 })
 
 router.post('/setDefaultSettings', async function(req, res){  
-  const body = req.body;
-  console.log("the body in getting backedn", body);
+  let body = req.body;
+  let { fun, crowd, ratioInput, difficultyGettingIn, difficultyGettingDrink } = body.rating;
   try{
+    let {rating, ratingChangeTime} =  await adminSetting.findOne({ _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da")})
     const filter = { _id: mongoose.Types.ObjectId("600ad7fa8dc42b13b2c0e2da") };
+    
+    if( parseInt(fun) === rating.fun && parseInt(crowd) === rating.crowd &&  parseInt(difficultyGettingIn) === rating.difficultyGettingIn
+      && parseInt(ratioInput) === rating.ratioInput && parseInt(difficultyGettingDrink) === rating.difficultyGettingDrink
+    ){
+      body.rating = rating;
+      body.ratingChangeTime = ratingChangeTime;
+    }
+      
+    
+
+    console.log("the body in getting backedn", body);
     let updatedDoc = await adminSetting.findOneAndUpdate(filter, body, {
       new: true
     });

@@ -50,6 +50,9 @@ const adminSettingSchema = new Schema({
       default: 1   
     }
   },
+  ratingChangeTime: {
+    type: String
+  },
   noOfUsersUntilShowDefault: {
    type: Number,
    required: true 

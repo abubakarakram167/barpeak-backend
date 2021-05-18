@@ -482,9 +482,9 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     
-    const { category, name, rating, ageInterval, ratioType, customData, customBusiness, photos } = businessInput;
-    console.log("the business input ", businessInput)
-
+    const { category, name, rating, ageInterval, ratioType, customData, customBusiness, photos, openingHours } = businessInput;
+  
+    let transformCustomData = null;
     let businessSelectedCategories = [];
     let allCategories = category.split(',');
     allCategories.map((id)=>{
@@ -492,15 +492,30 @@ module.exports = {
     })
     let records = await Category.find().where('_id').in(businessSelectedCategories).exec();
     
-    console.log("the all photoss", photos.split(',') )
-    
     const totalPhotos = photos.split(',').map((url)=>{
       return {
         secure_url: url
       }
     }) 
-    console.log("the total photos", totalPhotos)
+    
     const { latitude, longitude , address, phoneNo} = customData;
+    const parseOpeningHours = JSON.parse(openingHours.replace( '\\"', /"/g));
+    const parsedOpening = {
+      periods: parseOpeningHours
+    }
+    if(customBusiness){
+      transformCustomData =  {
+        address,
+        phoneNo,
+        rating: customData.rating,
+        latitude,
+        longitude,
+        opening_hours: parsedOpening
+      }
+    }
+
+    console.log("the transform", transformCustomData)
+    
     const business = new Business({
       category: businessSelectedCategories, 
       name,
@@ -514,13 +529,7 @@ module.exports = {
         type: "Point",
         coordinates: [longitude, latitude ]
       },
-      customData: {
-        address,
-        phoneNo,
-        rating: customData.rating,
-        latitude,
-        longitude
-      }
+      customData:transformCustomData
     })
     try{
     let updatedDoc = await business.save();
@@ -544,8 +553,12 @@ module.exports = {
     if(!user) 
       throw new Error("Invalid user");
     
-    const { id, category, name, rating, ageInterval, ratioType, photos, customData, openingHours } = businessInput;
+    const { id, category, name, rating, ageInterval, ratioType, photos, customData, openingHours, customBusiness } = businessInput;
     const parseOpeningHours = JSON.parse(openingHours.replace( '\\"', /"/g));
+    const parsedOpening = {
+      periods: parseOpeningHours
+    }
+    let transformCustomData = null;
     let businessSelectedCategories = [];
     let allCategories = category.split(',');
     allCategories.map((id)=>{
@@ -557,9 +570,22 @@ module.exports = {
         secure_url: url
       }
     }) 
+
+    const { latitude, longitude , address, phoneNo} = customData;
+    
+    if(customBusiness){
+      transformCustomData =  {
+        address,
+        phoneNo,
+        rating: customData.rating,
+        latitude,
+        longitude,
+        opening_hours: parsedOpening
+      }
+    }
     
     const filter = { _id: mongoose.Types.ObjectId(id) };
-    const { latitude, longitude , address, phoneNo} = customData;
+
     const update = {
       category: businessSelectedCategories, 
       name,
@@ -568,13 +594,7 @@ module.exports = {
       ratioType,
       addedByAdmin: true,
       uploadedPhotos: totalPhotos,
-      customData: {
-        address,
-        phoneNo,
-        rating: customData.rating,
-        latitude,
-        longitude
-      }
+      customData:transformCustomData
     }
 
     let updatedDoc = await Business.findOneAndUpdate(filter, update, {

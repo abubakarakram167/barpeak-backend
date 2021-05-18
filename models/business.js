@@ -95,7 +95,23 @@ const businessSchema = new Schema(
       phoneNo: String,
       rating: Number,
       latitude: Number,
-      longitude: Number
+      longitude: Number,
+      opening_hours: {
+        open_now: String,
+        periods: [
+          {
+            close: {
+              day: String,
+              time: String
+            },
+            open: {
+              day: String,
+              time: String
+            }
+          }
+        ],
+        weekday_text: []
+      }
     },
     uploadedPhotos: [photoSchema]
   },

@@ -49,6 +49,7 @@ module.exports = buildSchema(`
     rating: Float
     latitude: Float
     longitude: Float
+    opening_hours: openingHourData
   }
 
   type location{

@@ -96,6 +96,7 @@ module.exports = buildSchema(`
   type periodData{
     close: closeTimeData
     open: openTimeData
+    openFullDay: Boolean
   }
 
   type openingHourData{

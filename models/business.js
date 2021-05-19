@@ -107,6 +107,10 @@ const businessSchema = new Schema(
             open: {
               day: String,
               time: String
+            },
+            openFullDay: {
+              type: Boolean,
+              default: true
             }
           }
         ],
